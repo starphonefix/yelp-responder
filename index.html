@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="description" content="Star Phone Fix — Customer reply builder" />
+  <title>Star Phone Fix — Reply Builder</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            star: {
+              50: '#eef6ff',
+              100: '#d9ebff',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#1e40af',
+              900: '#0f172a',
+            },
+          },
+          fontFamily: {
+            sans: ['Segoe UI', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    html {
+      -webkit-text-size-adjust: 100%;
+      height: 100%;
+    }
+    body {
+      min-height: 100%;
+      min-height: 100dvh;
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+    .catalog-scroll::-webkit-scrollbar,
+    .canvas-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .catalog-scroll::-webkit-scrollbar-thumb,
+    .canvas-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .block-enter {
+      animation: blockEnter 0.22s ease-out;
+    }
+    @keyframes blockEnter {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .inline-field {
+      display: inline-block;
+      vertical-align: baseline;
+      min-width: 3ch;
+      max-width: 100%;
+      border: none;
+      border-bottom: 2px solid #ef4444;
+      background: #fef2f2;
+      padding: 0 0.25rem;
+      margin: 0 0.125rem;
+      font: inherit;
+      font-size: max(16px, 1em);
+      line-height: inherit;
+      color: #991b1b;
+      outline: none;
+      border-radius: 2px 2px 0 0;
+      touch-action: manipulation;
+    }
+    .inline-field::placeholder {
+      color: #fca5a5;
+      opacity: 0.9;
+    }
+    .inline-field:focus {
+      background: #fee2e2;
+      border-bottom-color: #dc2626;
+      box-shadow: 0 1px 0 0 #dc2626;
+    }
+    .inline-field--name {
+      border-bottom-color: #2563eb;
+      background: #eff6ff;
+      color: #1e40af;
+    }
+    .inline-field--name::placeholder {
+      color: #93c5fd;
+    }
+    .inline-field--name:focus {
+      background: #dbeafe;
+      border-bottom-color: #1d4ed8;
+      box-shadow: 0 1px 0 0 #1d4ed8;
+    }
+    .block-editor {
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+    .app-shell {
+      min-height: 100dvh;
+    }
+    .app-header {
+      padding-top: max(0px, env(safe-area-inset-top));
+    }
+    .touch-target {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    @media (max-width: 767px) {
+      .panel-catalog {
+        max-height: min(42dvh, 360px);
+      }
+      .panel-canvas {
+        min-height: min(48dvh, 520px);
+      }
+    }
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .app-main {
+        height: calc(100dvh - 4.25rem);
+      }
+    }
+    @media (min-width: 1024px) {
+      .app-main {
+        height: calc(100dvh - 4.5rem);
+      }
+    }
+  </style>
+</head>
+<body class="app-shell flex flex-col bg-slate-100 text-slate-900 font-sans antialiased">
+
+  <!-- Header -->
+  <header class="app-header sticky top-0 z-20 shrink-0 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2.5 sm:gap-4 sm:px-6 sm:py-3">
+      <div class="flex min-w-0 items-center gap-2 sm:gap-3">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-star-600 text-base font-bold text-white shadow-sm sm:h-10 sm:w-10 sm:text-lg">
+          ★
+        </div>
+        <div class="min-w-0">
+          <h1 class="truncate text-base font-bold leading-tight text-star-900 sm:text-lg" data-i18n="appTitle">Star Phone Fix</h1>
+          <p class="truncate text-[11px] text-slate-500 sm:text-xs" data-i18n="appSubtitle">Yelp Reply Builder</p>
+        </div>
+      </div>
+      <div class="flex shrink-0 items-center gap-1.5 sm:gap-3">
+        <div class="flex rounded-lg border border-slate-200 bg-slate-50 p-0.5" role="group" aria-label="Language">
+          <button type="button" id="lang-en" class="lang-btn touch-target rounded-md px-2.5 py-2 text-sm font-medium transition sm:px-3 sm:py-1.5" data-lang="en">EN</button>
+          <button type="button" id="lang-es" class="lang-btn touch-target rounded-md px-2.5 py-2 text-sm font-medium transition sm:px-3 sm:py-1.5" data-lang="es">ES</button>
+        </div>
+        <button
+          type="button"
+          id="clear-all-btn"
+          class="touch-target rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-xs font-medium text-red-700 transition hover:bg-red-100 sm:px-3 sm:text-sm"
+          data-i18n="clearAll"
+        >
+          Clear All
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 gap-3 p-3 min-h-0 md:grid-cols-[minmax(260px,36%)_1fr] md:gap-4 md:p-4 lg:grid-cols-[minmax(300px,400px)_1fr] lg:gap-6 lg:p-6">
+
+    <!-- Left Panel: Template Catalog -->
+    <aside class="panel-catalog flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:h-full md:max-h-none">
+      <div class="shrink-0 border-b border-slate-100 px-3 py-2.5 sm:px-4 sm:py-3">
+        <h2 class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-sm" data-i18n="catalogTitle">Template Catalog</h2>
+        <p class="mt-1 text-[11px] leading-snug text-slate-400 sm:text-xs" data-i18n="catalogHint">Click a template to add it to the canvas.</p>
+      </div>
+      <div id="catalog" class="catalog-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain p-2 sm:p-3"></div>
+    </aside>
+
+    <!-- Right Panel: Canvas -->
+    <section class="panel-canvas flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:h-full">
+      <div class="shrink-0 border-b border-slate-100 px-3 py-2.5 sm:px-4 sm:py-3">
+        <h2 class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-sm" data-i18n="canvasTitle">Message Canvas</h2>
+        <p class="mt-1 text-[11px] leading-snug text-slate-400 sm:text-xs" data-i18n="canvasHint">Edit the highlighted fields directly in each block. Order matches your final message.</p>
+      </div>
+
+      <div id="canvas" class="canvas-scroll min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain p-3 sm:p-4">
+        <div id="canvas-empty" class="flex h-full min-h-[180px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center sm:min-h-[240px] sm:px-6">
+          <p class="text-3xl opacity-40 sm:text-4xl">📝</p>
+          <p class="mt-3 text-sm font-medium text-slate-600" data-i18n="emptyTitle">No blocks yet</p>
+          <p class="mt-1 max-w-xs text-xs text-slate-400" data-i18n="emptyHint">Select templates from the left panel to build your reply.</p>
+        </div>
+      </div>
+
+      <div class="shrink-0 border-t border-slate-100 bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-4">
+        <button
+          type="button"
+          id="copy-btn"
+          class="touch-target flex w-full items-center justify-center gap-2 rounded-xl bg-star-600 px-4 py-3.5 text-base font-semibold text-white shadow-md transition hover:bg-star-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 sm:py-4"
+          disabled
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          <span data-i18n="copyFinal">Copiar Texto</span>
+        </button>
+        <p id="copy-feedback" class="mt-2 hidden text-center text-sm font-medium text-emerald-600" data-i18n="copied">Copied to clipboard!</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /* ─── i18n UI strings ─── */
+    const UI = {
+      en: {
+        appTitle: 'Star Phone Fix',
+        appSubtitle: 'Yelp Reply Builder',
+        clearAll: 'Clear All',
+        catalogTitle: 'Template Catalog',
+        catalogHint: 'Step 1: pick a problem. Step 2: pick logistics. Edit highlighted fields in each block.',
+        canvasTitle: 'Final Message',
+        canvasHint: '1. Click a problem from Step 1. 2. Click a schedule from Step 2. 3. Edit the highlighted fields.',
+        emptyHint: 'Pick a template from Step 1, then add a logistics block from Step 2.',
+        emptyTitle: 'No blocks yet',
+        copyFinal: 'Copy Text',
+        copied: 'Copied to clipboard!',
+        removeBlock: 'Remove block',
+        preview: 'Message',
+        tokenLabels: {
+          name: 'Name',
+          model: 'Model',
+          price: 'Price',
+          price1: 'Price 1',
+          price2: 'Price 2',
+        },
+        categories: {
+          noModel: 'No Model Inquiries (No Discount)',
+          withModel: 'Screens With Exact Model (With Discount)',
+          otherIssues: 'Other Common Issues',
+          step2Logistics: 'Step 2 — Logistics & Closing',
+        },
+        templates: {
+          iphoneScreenNoModel: '📱 1. iPhone Screen (Ask model & invite)',
+          samsungScreenNoModel: '📱 2. Samsung Screen (Ask model & invite)',
+          motorolaScreenNoModel: '📱 3. Motorola Screen (Ask model / Trick / Invite)',
+          unknownIssue: '❓ 4. Unknown issue (Free diagnostic)',
+          iphoneBatteryNoModel: '🔋 5. iPhone Battery (Ask model & invite)',
+          samsungBatteryNoModel: '🔋 6. Samsung Battery (Ask model & invite)',
+          iphoneChargingPortNoModel: '🔌 7. iPhone Charging Port (Ask model & invite)',
+          samsungChargingPortNoModel: '🔌 8. Samsung Charging Port (Ask model & invite)',
+          iphoneBackGlassNoModel: '🛑 9. iPhone Back Glass (Ask model & invite)',
+          iphoneScreen1Quality: '🟢 10. iPhone Screen (1 Quality / e.g. iPhone 12)',
+          iphoneScreen2Quality: '🟢 11. iPhone Screen (2 Qualities: LCD vs OLED)',
+          samsungScreen1Quality: '🔵 12. Samsung Screen (1 Quality)',
+          samsungScreen2Quality: '🔵 13. Samsung Screen (2 Qualities: Premium vs Original)',
+          motorolaScreen1Quality: '🟠 14. Motorola Screen (1 Quality / 2 Hours)',
+          iphoneBattery1Quality: '🔋 15. iPhone Battery (With model & price)',
+          samsungBattery1Quality: '🔋 16. Samsung Battery (With model & price)',
+          iphoneChargingPort1Quality: '🔌 17. iPhone Charging Port (With model & price)',
+          samsungChargingPort1Quality: '🔌 18. Samsung Charging Port (With model & price)',
+          iphoneBackGlassLaser: '🛑 19. iPhone Back Glass (Laser — 4 hrs)',
+          iphoneBackGlassFast: '🛑 20. iPhone Back Glass (Fast 45–60 min)',
+          ipadAskModel: '💊 21. iPad (Ask model / iCloud & Carrier tricks)',
+          ipadGlassVsLcd: '💊 22. iPad (Glass vs LCD difference)',
+          waterDamage: '💧 23. Water Damage (Guide, Data Recovery & 2FA)',
+          openToday: '🕒 A. Open today (Enough time)',
+          closingSoon: '🏃 B. Closing soon (6 PM limit)',
+          longRepair: '⏳ C. Long repair (Recommend before 2 PM)',
+          closedTonight: '🌙 D1. Store closed (Come tomorrow)',
+          closedWeekend: '📅 D2. Closed for the weekend (Until Monday)',
+        },
+      },
+      es: {
+        appTitle: 'Star Phone Fix',
+        appSubtitle: 'Constructor de Respuestas Yelp',
+        clearAll: 'Limpiar todo',
+        catalogTitle: 'Catálogo de Plantillas',
+        catalogHint: 'Paso 1: elige un problema. Paso 2: elige logística. Edita los campos resaltados en cada bloque.',
+        canvasTitle: 'Editor de Mensaje Final',
+        canvasHint: '1. Haz clic en un problema del Paso 1. 2. Haz clic en un horario del Paso 2. 3. Edita los campos resaltados.',
+        emptyHint: 'Elige una plantilla del Paso 1 y luego agrega un bloque de logística del Paso 2.',
+        emptyTitle: 'Sin bloques aún',
+        copyFinal: 'Copiar Texto',
+        copied: '¡Copiado al portapapeles!',
+        removeBlock: 'Eliminar bloque',
+        preview: 'Mensaje',
+        tokenLabels: {
+          name: 'Nombre',
+          model: 'Modelo',
+          price: 'Precio',
+          price1: 'Precio 1',
+          price2: 'Precio 2',
+        },
+        categories: {
+          noModel: 'Consultas Sin Modelo (Sin Descuento)',
+          withModel: 'Pantallas Con Modelo Exacto (Con Descuento)',
+          otherIssues: 'Otros Problemas Comunes',
+          step2Logistics: 'Paso 2 — Logística y Cierre',
+        },
+        templates: {
+          iphoneScreenNoModel: '📱 1. iPhone Screen (Pedir modelo e invitar)',
+          samsungScreenNoModel: '📱 2. Samsung Screen (Pedir modelo e invitar)',
+          motorolaScreenNoModel: '📱 3. Motorola Screen (Pedir modelo / Truco / Invitar)',
+          unknownIssue: '❓ 4. Problema desconocido (Diagnóstico gratis)',
+          iphoneBatteryNoModel: '🔋 5. iPhone Battery (Pedir modelo e invitar)',
+          samsungBatteryNoModel: '🔋 6. Samsung Battery (Pedir modelo e invitar)',
+          iphoneChargingPortNoModel: '🔌 7. iPhone Charging Port (Pedir modelo e invitar)',
+          samsungChargingPortNoModel: '🔌 8. Samsung Charging Port (Pedir modelo e invitar)',
+          iphoneBackGlassNoModel: '🛑 9. iPhone Back Glass (Pedir modelo e invitar)',
+          iphoneScreen1Quality: '🟢 10. iPhone Screen (1 Calidad / Ej. iPhone 12)',
+          iphoneScreen2Quality: '🟢 11. iPhone Screen (2 Calidades: LCD vs OLED)',
+          samsungScreen1Quality: '🔵 12. Samsung Screen (1 Calidad)',
+          samsungScreen2Quality: '🔵 13. Samsung Screen (2 Calidades: Premium vs Original)',
+          motorolaScreen1Quality: '🟠 14. Motorola Screen (1 Calidad / 2 Horas)',
+          iphoneBattery1Quality: '🔋 15. iPhone Battery (Con modelo y precio)',
+          samsungBattery1Quality: '🔋 16. Samsung Battery (Con modelo y precio)',
+          iphoneChargingPort1Quality: '🔌 17. iPhone Charging Port (Con modelo y precio)',
+          samsungChargingPort1Quality: '🔌 18. Samsung Charging Port (Con modelo y precio)',
+          iphoneBackGlassLaser: '🛑 19. iPhone Back Glass (Láser — 4 hrs)',
+          iphoneBackGlassFast: '🛑 20. iPhone Back Glass (Rápido 45–60 min)',
+          ipadAskModel: '💊 21. iPad (Pedir modelo / Trucos iCloud y Carrier)',
+          ipadGlassVsLcd: '💊 22. iPad (Diferencia Cristal vs LCD)',
+          waterDamage: '💧 23. Daño por agua (Guía, Data Recovery & 2FA)',
+          openToday: '🕒 A. Abierto hoy (Hay tiempo suficiente)',
+          closingSoon: '🏃 B. A punto de cerrar (Límite 6 PM)',
+          longRepair: '⏳ C. Reparación larga (Antes de las 2 PM)',
+          closedTonight: '🌙 D1. Tienda cerrada (Venir mañana)',
+          closedWeekend: '📅 D2. Cerrado el fin de semana (Hasta el lunes)',
+        },
+      },
+    };
+
+    /* ─── Message templates (English — sent to Yelp customers) ─── */
+    const MESSAGES = {
+      iphoneScreenNoModel: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! To give you an accurate price for your screen replacement, could you please let us know the exact iPhone model you have (for example, iPhone 13, 14 Pro, etc.)? Every screen replacement includes a 30-day warranty against defects. If the screen is completely blank or you are unsure of the exact model, you are more than welcome to bring the device to the shop! We will gladly identify it for you and provide a quote on the spot without any commitment.',
+        defaults: { name: '' },
+      },
+      samsungScreenNoModel: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! Samsung screen prices vary greatly depending on the exact model and version. Could you please let us know your specific Samsung model? All our screen replacements include a 30-day warranty against defects. If the screen is completely black and you can\'t check the settings, feel free to stop by the shop. We can identify the device for you and give you an exact quote right away.',
+        defaults: { name: '' },
+      },
+      motorolaScreenNoModel: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! Motorola has many different series, so to give you the exact price, we need the specific model. If your screen is still partly visible, you can find the model by going to Settings > About phone > Model (or Device name). If the screen is completely black or you aren\'t sure, please feel free to bring it to the shop! We will gladly identify it for you and provide an accurate quote without any commitment.',
+        defaults: { name: '' },
+      },
+      unknownIssue: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! To better assist you, could you please provide a few more details about what your device is experiencing and its exact model? To ensure an accurate and reliable solution, we invite you to bring your device to our shop for a completely free diagnostic with no obligation or commitment on your part. Our technicians will inspect it thoroughly to give you an exact price.',
+        defaults: { name: '' },
+      },
+      iphoneBatteryNoModel: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! iPhone battery replacement prices vary depending on the exact model. Could you please let us know which iPhone you have (for example, iPhone 13, 14 Pro, etc.)? Every battery replacement includes a 30-day warranty against defects. If you are unsure of the exact model, you are more than welcome to bring the device to the shop! We will gladly identify it for you and provide a quote on the spot without any commitment.',
+        defaults: { name: '' },
+      },
+      samsungBatteryNoModel: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! Samsung battery prices vary depending on the exact model and series. Could you please let us know your specific Samsung model? Every battery replacement includes a 30-day warranty against defects. If you are unsure of the exact model, feel free to stop by the shop — we can identify the device for you and give you an exact quote right away.',
+        defaults: { name: '' },
+      },
+      iphoneChargingPortNoModel: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! iPhone charging port replacement prices vary depending on the exact model. Could you please let us know which iPhone you have (for example, iPhone 13, 14 Pro, etc.)? Every charging port repair includes a 30-day warranty against defects. If you are unsure of the exact model, you are more than welcome to bring the device to the shop! We will gladly identify it for you and provide a quote on the spot without any commitment.',
+        defaults: { name: '' },
+      },
+      samsungChargingPortNoModel: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! Samsung charging port prices vary depending on the exact model and series. Could you please let us know your specific Samsung model? Every charging port repair includes a 30-day warranty against defects. If you are unsure of the exact model, feel free to stop by the shop — we can identify the device for you and give you an exact quote right away.',
+        defaults: { name: '' },
+      },
+      iphoneBackGlassNoModel: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! iPhone back glass replacement prices vary depending on the exact model and whether a laser or standard process is needed. Could you please let us know which iPhone you have (for example, iPhone 13, 14 Pro, etc.)? Every back glass repair includes a 30-day warranty against defects. If you are unsure of the exact model, you are more than welcome to bring the device to the shop! We will gladly identify it for you and provide a quote on the spot without any commitment.',
+        defaults: { name: '' },
+      },
+      iphoneScreen1Quality: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! The screen replacement cost for your {{model}} is ${{price}}. This repair includes a 30-day warranty against defects and usually takes about 30 to 45 minutes. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        defaults: { name: '', model: '', price: '' },
+      },
+      iphoneScreen2Quality: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! For your {{model}}, we offer two screen options depending on your needs.\n\nOur budget-friendly LCD option is ${{price1}}. Please note that because LCD technology is different from the original screen, the display will be slightly thicker and the screen won\'t be quite as bright. We usually only recommend this option if you are planning to use the phone as a trade-in or if you absolutely need a temporary, cost-effective fix.\n\nOur Premium OLED option is ${{price2}}. This is the quality we highly recommend if you plan to keep using the phone. OLED screens perfectly match the original display\'s thickness, vivid colors, deep blacks, and brightness, ensuring your phone feels and functions just like it did before it broke.\n\nBoth options include a 30-day warranty against defects and usually take about 30 to 45 minutes. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        defaults: { name: '', model: '', price1: '', price2: '' },
+      },
+      samsungScreen1Quality: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! The screen replacement cost for your Samsung {{model}} is ${{price}}. This repair includes a 30-day warranty against defects and takes about 1 hour to complete. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        defaults: { name: '', model: '', price: '' },
+      },
+      samsungScreen2Quality: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! For your Samsung {{model}}, we offer two excellent OLED screen options depending on your preference: our premium OLED screen is ${{price1}}, and our original Service Pack OLED screen is ${{price2}}. Both repairs include a 30-day warranty against defects and take about 1 hour to complete. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        defaults: { name: '', model: '', price1: '', price2: '' },
+      },
+      motorolaScreen1Quality: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! The screen replacement cost for your Motorola {{model}} is ${{price}}. This repair includes a 30-day warranty against defects and takes about 2 hours to complete. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        defaults: { name: '', model: '', price: '' },
+      },
+      iphoneBattery1Quality: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! A new battery will definitely help your {{model}} hold a charge like it used to. The battery replacement cost is ${{price}}. This repair includes a 30-day warranty against defects and usually takes about 30 to 45 minutes. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        defaults: { name: '', model: '', price: '' },
+      },
+      samsungBattery1Quality: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! A new battery will definitely help your Samsung {{model}} hold a charge like it used to. The battery replacement cost is ${{price}}. This repair includes a 30-day warranty against defects and usually takes about 30 to 45 minutes. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        defaults: { name: '', model: '', price: '' },
+      },
+      iphoneChargingPort1Quality: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! When a device struggles to charge, replacing the charging port resolves the issue in the vast majority of cases. The charging port replacement cost for your {{model}} is ${{price}}. While occasionally charging problems can be related to deeper motherboard issues, our technicians will thoroughly test your device to confirm and ensure we only fix what is necessary. The port repair includes a 30-day warranty against defects and takes about 45 to 60 minutes. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        defaults: { name: '', model: '', price: '' },
+      },
+      samsungChargingPort1Quality: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! When a device struggles to charge, replacing the charging port resolves the issue in the vast majority of cases. The charging port replacement cost for your Samsung {{model}} is ${{price}}. While occasionally charging problems can be related to deeper motherboard issues, our technicians will thoroughly test your device to confirm and ensure we only fix what is necessary. The port repair includes a 30-day warranty against defects and takes about 45 to 60 minutes. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        defaults: { name: '', model: '', price: '' },
+      },
+      iphoneBackGlassLaser: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! The back glass replacement is ${{price}}. Please note that this is a slow and delicate process that cannot be rushed; we must thoroughly clean the frame, apply specialized adhesive, and allow it to dry properly, which takes about 4 hours in total. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        defaults: { name: '', price: '120' },
+      },
+      iphoneBackGlassFast: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! The back glass replacement is ${{price}} and the repair takes about 45 to 60 minutes to complete. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        defaults: { name: '', price: '120' },
+      },
+      ipadAskModel: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! To give you an accurate quote for your iPad, could you please let us know the exact model, the \'A\' number, or the Serial Number? You can usually find this printed on the back of the iPad, right below the Apple logo.\n\nIf the back is unreadable and your screen is completely black or broken, you can find your iPad model on an iPhone (if both devices use the same Apple ID) by going to Settings, tapping your iCloud name at the top, and scrolling to the bottom to see your device list. You can also log into your cellular carrier account (AT&T, T-Mobile, Verizon, etc.) to view your active devices. If the screen is still functional, you can check under Settings > General > About.',
+        defaults: { name: '' },
+      },
+      ipadGlassVsLcd: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! Your iPad model features a separate outer glass and an inner LCD screen. Depending on the damage, you might only need the top outer glass replaced, which is ${{price}}, or both pieces if the display has lines, touch issues, or black spots, which would be ${{price2}}. Both options include a 30-day warranty. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        defaults: { name: '', price: '', price2: '' },
+      },
+      waterDamage: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! Water damage is highly unpredictable, but in almost every case, it requires a screen replacement plus whatever else might be affected by the liquid.\n\nIf your screen is completely dark or not responding to touch, but you can still hear sounds, ringtones, or alarms, the display is definitely damaged. On the other hand, if you can still see the image perfectly, the screen might have survived! If you let us know your exact model and what the screen is currently doing, we can give you the price for the screen replacement so you have an idea of the base cost.\n\nBecause water can cause hidden corrosion or affect other components, we need to perform a thorough inspection on our workbenches. This is not a quick repair where you can wait in the lobby; you will need to leave the device with us. Every case is completely different, so we cannot provide a definitive total cost or timeframe until we have completed a full evaluation.\n\nLastly, if you have already purchased a new phone and only care about getting your pictures and contacts back, or if you simply need the device working long enough to receive crucial Two-Factor Authentication (2FA) codes to log into your accounts, we also offer Data Recovery services! We can perform a temporary repair, replacing whatever is necessary to keep the phone powered on just long enough to safely extract your information and approve your logins.',
+        defaults: { name: '' },
+      },
+      openToday: {
+        text: 'We are open today until 6:00 PM, so you are welcome to come in and we can get this fixed for you today. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
+        defaults: {},
+      },
+      closingSoon: {
+        text: 'We are closing today at 6:00 PM. If you come in shortly, we might be able to squeeze it in, or you are welcome to drop it off and pick it up tomorrow. Alternatively, you can bring it in tomorrow morning when we open at 10:00 AM. We accept walk-ins until 6:00 PM so you can plan your visit accordingly. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
+        defaults: {},
+      },
+      longRepair: {
+        text: 'Because of the time required for this process and our closing time today at 6:00 PM, we wouldn\'t be able to finish it this afternoon. You can drop it off today to be ready tomorrow, or we highly recommend bringing it in tomorrow as early as possible, preferably before 2:00 PM, to have it completed on the exact same day. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
+        defaults: {},
+      },
+      closedTonight: {
+        text: 'The shop is currently closed for the day, but we would love to help you tomorrow. We open at 10:00 AM and accept walk-ins until 6:00 PM so you can plan your visit ahead. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
+        defaults: {},
+      },
+      closedWeekend: {
+        text: 'The shop is currently closed for the weekend, but we would love to help you on Monday! We open at 10:00 AM and accept walk-ins until 6:00 PM so you can plan your visit ahead. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
+        defaults: {},
+      },
+    };
+
+    const CATALOG = [
+      {
+        category: 'noModel',
+        items: [
+          'iphoneScreenNoModel',
+          'samsungScreenNoModel',
+          'motorolaScreenNoModel',
+          'unknownIssue',
+          'iphoneBatteryNoModel',
+          'samsungBatteryNoModel',
+          'iphoneChargingPortNoModel',
+          'samsungChargingPortNoModel',
+          'iphoneBackGlassNoModel',
+        ],
+      },
+      {
+        category: 'withModel',
+        items: [
+          'iphoneScreen1Quality',
+          'iphoneScreen2Quality',
+          'samsungScreen1Quality',
+          'samsungScreen2Quality',
+          'motorolaScreen1Quality',
+          'iphoneBattery1Quality',
+          'samsungBattery1Quality',
+          'iphoneChargingPort1Quality',
+          'samsungChargingPort1Quality',
+        ],
+      },
+      {
+        category: 'otherIssues',
+        items: [
+          'iphoneBackGlassLaser',
+          'iphoneBackGlassFast',
+          'ipadAskModel',
+          'ipadGlassVsLcd',
+          'waterDamage',
+        ],
+      },
+      {
+        category: 'step2Logistics',
+        divider: true,
+        items: [
+          'openToday',
+          'closingSoon',
+          'longRepair',
+          'closedTonight',
+          'closedWeekend',
+        ],
+      },
+    ];
+
+    /* ─── Global token defaults (fallback) ─── */
+    const GLOBAL_DEFAULTS = {
+      name: '',
+      model: '',
+      price: '',
+      price1: '',
+      price2: '',
+    };
+
+    const TOKEN_REGEX = /\{\{(\w+)\}\}/g;
+
+    function parseTemplate(text, defaults) {
+      const segments = [];
+      const slots = [];
+      const slotValues = {};
+      const tokenCounts = {};
+      let lastIndex = 0;
+      let match;
+      const re = new RegExp(TOKEN_REGEX.source, 'g');
+
+      while ((match = re.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+          segments.push({ type: 'text', value: text.slice(lastIndex, match.index) });
+        }
+
+        const token = match[1];
+        const count = tokenCounts[token] || 0;
+        tokenCounts[token] = count + 1;
+        const slotId = count === 0 ? token : token + '_' + count;
+
+        slots.push({ id: slotId, token });
+        slotValues[slotId] = defaults[token] ?? '';
+        segments.push({ type: 'slot', id: slotId, token });
+        lastIndex = re.lastIndex;
+      }
+
+      if (lastIndex < text.length) {
+        segments.push({ type: 'text', value: text.slice(lastIndex) });
+      }
+
+      return { segments, slots, slotValues };
+    }
+
+    function formatSlotValue(token, value) {
+      const trimmed = (value ?? '').trim();
+      if (!trimmed) {
+        return token === 'name' ? '' : '';
+      }
+      if (token === 'name') return ' ' + trimmed;
+      return trimmed;
+    }
+
+    function getBlockText(block) {
+      return block.segments
+        .map((seg) => {
+          if (seg.type === 'text') return seg.value;
+          return formatSlotValue(seg.token, block.slotValues[seg.id]);
+        })
+        .join('');
+    }
+
+    function resizeInlineField(input) {
+      const length = Math.max(input.value.length, input.placeholder.length, 3);
+      input.style.width = length + 1 + 'ch';
+    }
+
+    /* ─── State ─── */
+    let currentLang = localStorage.getItem('spf-lang') || 'es';
+    let blockCounter = 0;
+    const blocks = [];
+
+    /* ─── DOM refs ─── */
+    const catalogEl = document.getElementById('catalog');
+    const canvasEl = document.getElementById('canvas');
+    const canvasEmptyEl = document.getElementById('canvas-empty');
+    const copyBtn = document.getElementById('copy-btn');
+    const copyFeedback = document.getElementById('copy-feedback');
+    const clearAllBtn = document.getElementById('clear-all-btn');
+
+    function t(key) {
+      const keys = key.split('.');
+      let val = UI[currentLang];
+      for (const k of keys) val = val?.[k];
+      return val ?? key;
+    }
+
+    function findTemplateById(templateId) {
+      const msg = MESSAGES[templateId];
+      if (!msg) return null;
+      return { id: templateId, text: msg.text, defaults: msg.defaults };
+    }
+
+    function resolveCatalogItem(item) {
+      if (typeof item === 'string') return findTemplateById(item);
+      return item;
+    }
+
+    function buildBlockFromTemplate(templateItem, preservedValues) {
+      const defaults = getDefaults(templateItem.defaults || {});
+      const parsed = parseTemplate(templateItem.text, defaults);
+
+      if (preservedValues) {
+        parsed.slots.forEach((slot, index) => {
+          if (preservedValues[index] != null) {
+            parsed.slotValues[slot.id] = preservedValues[index];
+          }
+        });
+      }
+
+      return {
+        segments: parsed.segments,
+        slots: parsed.slots,
+        slotValues: parsed.slotValues,
+      };
+    }
+
+    function getDefaults(templateDefaults) {
+      return { ...GLOBAL_DEFAULTS, ...templateDefaults };
+    }
+
+    function updateEmptyState() {
+      const hasBlocks = blocks.length > 0;
+      canvasEmptyEl.classList.toggle('hidden', hasBlocks);
+      copyBtn.disabled = !hasBlocks;
+    }
+
+    function renderCatalog() {
+      catalogEl.innerHTML = '';
+
+      CATALOG.forEach((group) => {
+        const section = document.createElement('div');
+        section.className = 'mb-4 last:mb-0' + (group.divider ? ' mt-2 border-t-2 border-slate-200 pt-4' : '');
+
+        const heading = document.createElement('h3');
+        heading.className = 'mb-2 px-1 text-xs font-bold uppercase tracking-wider text-slate-400';
+        heading.textContent = t('categories.' + group.category);
+        section.appendChild(heading);
+
+        const list = document.createElement('div');
+        list.className = 'space-y-1.5';
+
+        group.items.forEach((rawItem) => {
+          const item = resolveCatalogItem(rawItem);
+          if (!item) return;
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className =
+            'touch-target w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-left text-sm font-medium leading-snug text-slate-700 transition hover:border-star-500 hover:bg-star-50 hover:text-star-700 active:scale-[0.99] sm:py-2.5';
+          btn.textContent = t('templates.' + item.id);
+          btn.addEventListener('click', () => addBlock(item));
+          list.appendChild(btn);
+        });
+
+        section.appendChild(list);
+        catalogEl.appendChild(section);
+      });
+    }
+
+    function createBlockElement(block) {
+      const card = document.createElement('article');
+      card.className =
+        'block-enter relative rounded-xl border border-slate-200 bg-slate-50 p-3 shadow-sm sm:p-4';
+      card.dataset.blockId = block.id;
+
+      const header = document.createElement('div');
+      header.className = 'mb-3 flex items-start justify-between gap-2';
+
+      const title = document.createElement('h3');
+      title.className = 'text-sm font-semibold text-star-700';
+      title.textContent = t('templates.' + block.templateId);
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className =
+        'touch-target flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-red-100 hover:text-red-600 sm:h-7 sm:w-7';
+      removeBtn.setAttribute('aria-label', t('removeBlock'));
+      removeBtn.innerHTML =
+        '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>';
+      removeBtn.addEventListener('click', () => removeBlock(block.id));
+
+      header.appendChild(title);
+      header.appendChild(removeBtn);
+      card.appendChild(header);
+
+      const editorLabel = document.createElement('p');
+      editorLabel.className = 'mb-1 text-xs font-medium uppercase tracking-wide text-slate-400';
+      editorLabel.textContent = t('preview');
+
+      const editor = document.createElement('div');
+      editor.className =
+        'block-editor rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-[15px] leading-relaxed text-slate-800 sm:px-3 sm:py-2.5 sm:text-sm';
+
+      block.segments.forEach((seg) => {
+        if (seg.type === 'text') {
+          editor.appendChild(document.createTextNode(seg.value));
+          return;
+        }
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'inline-field' + (seg.token === 'name' ? ' inline-field--name' : '');
+        input.value = block.slotValues[seg.id] ?? '';
+        input.placeholder = t('tokenLabels.' + seg.token) || seg.token;
+        input.setAttribute('aria-label', t('tokenLabels.' + seg.token) || seg.token);
+        input.dataset.slotId = seg.id;
+        resizeInlineField(input);
+
+        input.addEventListener('input', (e) => {
+          block.slotValues[seg.id] = e.target.value;
+          resizeInlineField(e.target);
+        });
+
+        editor.appendChild(input);
+      });
+
+      card.appendChild(editorLabel);
+      card.appendChild(editor);
+      block.editorEl = editor;
+      return card;
+    }
+
+    function addBlock(templateItem) {
+      const built = buildBlockFromTemplate(templateItem);
+
+      const block = {
+        id: ++blockCounter,
+        templateId: templateItem.id,
+        segments: built.segments,
+        slots: built.slots,
+        slotValues: built.slotValues,
+        el: null,
+        editorEl: null,
+      };
+
+      const card = createBlockElement(block);
+      block.el = card;
+      blocks.push(block);
+
+      canvasEl.appendChild(card);
+      updateEmptyState();
+
+      if (window.innerWidth < 768) {
+        requestAnimationFrame(() => {
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      }
+
+      const firstInput = card.querySelector('.inline-field');
+      if (firstInput) firstInput.focus();
+    }
+
+    function removeBlock(blockId) {
+      const idx = blocks.findIndex((b) => b.id === blockId);
+      if (idx === -1) return;
+      blocks[idx].el.remove();
+      blocks.splice(idx, 1);
+      updateEmptyState();
+    }
+
+    function clearAllBlocks() {
+      blocks.splice(0, blocks.length);
+      canvasEl.querySelectorAll('article[data-block-id]').forEach((el) => el.remove());
+      updateEmptyState();
+      copyFeedback.classList.add('hidden');
+    }
+
+    function getFinalText() {
+      return blocks
+        .map((b) => getBlockText(b))
+        .filter((text) => text.trim())
+        .join('\n\n');
+    }
+
+    async function copyFinalText() {
+      const text = getFinalText();
+      if (!text) return;
+
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+
+      copyFeedback.classList.remove('hidden');
+      clearTimeout(copyFinalText._timer);
+      copyFinalText._timer = setTimeout(() => {
+        copyFeedback.classList.add('hidden');
+      }, 2000);
+    }
+
+    function applyLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('spf-lang', lang);
+      document.documentElement.lang = lang;
+
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        const key = el.getAttribute('data-i18n');
+        if (key) el.textContent = t(key);
+      });
+
+      document.querySelectorAll('.lang-btn').forEach((btn) => {
+        const active = btn.dataset.lang === lang;
+        btn.classList.toggle('bg-white', active);
+        btn.classList.toggle('text-star-700', active);
+        btn.classList.toggle('shadow-sm', active);
+        btn.classList.toggle('text-slate-500', !active);
+      });
+
+      renderCatalog();
+
+      blocks.forEach((block) => {
+        const newCard = createBlockElement(block);
+        block.el.replaceWith(newCard);
+        block.el = newCard;
+      });
+    }
+
+    /* ─── Event listeners ─── */
+    document.getElementById('lang-en').addEventListener('click', () => applyLanguage('en'));
+    document.getElementById('lang-es').addEventListener('click', () => applyLanguage('es'));
+    clearAllBtn.addEventListener('click', clearAllBlocks);
+    copyBtn.addEventListener('click', copyFinalText);
+
+    /* ─── Init ─── */
+    applyLanguage(currentLang);
+  </script>
+</body>
+</html>
