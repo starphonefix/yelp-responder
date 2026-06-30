@@ -4,8 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="SPF Replies" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#1d4ed8" />
   <meta name="description" content="Star Phone Fix — Customer reply builder" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <title>Star Phone Fix — Reply Builder</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -117,23 +123,93 @@
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .step-select {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 0.75rem center;
-      background-size: 1.25rem;
-      padding-right: 2.5rem;
+    .picker-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      width: 100%;
+      text-align: left;
+    }
+    .picker-trigger-label {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .picker-trigger.is-placeholder .picker-trigger-label {
+      color: #94a3b8;
+    }
+    .picker-sheet {
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .picker-sheet.is-open {
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .picker-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+    }
+    .picker-panel {
+      position: absolute;
+      inset-inline: 0;
+      bottom: 0;
+      max-height: min(88dvh, 720px);
+      display: flex;
+      flex-direction: column;
+      border-top-left-radius: 1rem;
+      border-top-right-radius: 1rem;
+      background: #fff;
+      padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+      transform: translateY(100%);
+      transition: transform 0.24s ease-out;
+    }
+    .picker-sheet.is-open .picker-panel {
+      transform: translateY(0);
+    }
+    .picker-option {
+      display: block;
+      width: 100%;
+      border-bottom: 1px solid #f1f5f9;
+      padding: 0.95rem max(1rem, env(safe-area-inset-right)) 0.95rem max(1rem, env(safe-area-inset-left));
+      text-align: left;
+      font-size: 1rem;
+      line-height: 1.35;
+      color: #0f172a;
+    }
+    .picker-option.is-active {
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-weight: 600;
     }
     @media (max-width: 767px) {
       .panel-canvas {
         min-height: 0;
       }
+      .app-header-inner,
+      .app-main {
+        padding-left: max(0.5rem, env(safe-area-inset-left));
+        padding-right: max(0.5rem, env(safe-area-inset-right));
+      }
     }
     @media (min-width: 768px) {
       .app-main {
-        max-width: 42rem;
+        max-width: 40rem;
+        margin-inline: auto;
       }
+    }
+    .install-banner {
+      display: none;
+    }
+    .install-banner.is-visible {
+      display: block;
+    }
+    .install-banner-inner {
+      padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
     }
   </style>
 </head>
@@ -141,14 +217,13 @@
 
   <!-- Header -->
   <header class="app-header sticky top-0 z-20 shrink-0 border-b border-slate-200 bg-white/95 backdrop-blur">
-    <div class="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2.5 sm:gap-4 sm:px-6 sm:py-3">
+    <div class="app-header-inner mx-auto flex w-full max-w-none items-center justify-between gap-2 px-2 py-2 sm:px-4 sm:py-3">
       <div class="flex min-w-0 items-center gap-2 sm:gap-3">
         <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-star-600 text-base font-bold text-white shadow-sm sm:h-10 sm:w-10 sm:text-lg">
           ★
         </div>
         <div class="min-w-0">
           <h1 class="truncate text-base font-bold leading-tight text-star-900 sm:text-lg" data-i18n="appTitle">Star Phone Fix</h1>
-          <p class="truncate text-[11px] text-slate-500 sm:text-xs" data-i18n="appSubtitle">Yelp Reply Builder</p>
         </div>
       </div>
       <div class="flex shrink-0 items-center gap-1.5 sm:gap-3">
@@ -168,40 +243,66 @@
     </div>
   </header>
 
-  <main class="app-main mx-auto flex w-full flex-1 flex-col gap-3 p-3 min-h-0 md:p-4 lg:max-w-2xl lg:p-6">
+  <!-- Install prompt (mobile PWA) -->
+  <div id="install-banner" class="install-banner shrink-0 border-b border-star-100 bg-star-50" role="region" aria-label="Install app">
+    <div class="install-banner-inner mx-auto flex w-full max-w-none items-start gap-3 px-2 py-2.5 sm:px-4">
+      <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-star-600 text-lg font-bold text-white">★</div>
+      <div class="min-w-0 flex-1">
+        <p id="install-title" class="text-sm font-semibold text-star-900">Install this app</p>
+        <p id="install-message" class="mt-0.5 text-xs leading-snug text-slate-600">Add to your home screen for quick access.</p>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <button type="button" id="install-btn" class="touch-target hidden rounded-lg bg-star-600 px-3 py-2 text-xs font-semibold text-white" data-i18n="installBtn">Install</button>
+          <button type="button" id="install-dismiss" class="touch-target rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600" data-i18n="installLater">Not now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="app-main flex w-full max-w-none flex-1 flex-col gap-2 p-1 min-h-0 sm:gap-3 sm:p-4">
 
     <!-- Step pickers -->
-    <div class="shrink-0 space-y-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+    <div class="shrink-0 space-y-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm sm:space-y-3 sm:rounded-2xl sm:p-3">
       <div>
-        <label for="step1-select" class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500" data-i18n="step1Label">Step 1 — Problem & Price</label>
-        <select id="step1-select" class="step-select touch-target w-full rounded-xl border border-slate-300 bg-white px-3 py-3.5 text-base text-slate-800 outline-none transition focus:border-star-500 focus:ring-2 focus:ring-star-100">
-          <option value="" data-i18n="step1Placeholder">— Select a template —</option>
-        </select>
+        <label class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-slate-500" data-i18n="step1Label">Step 1</label>
+        <button type="button" id="step1-trigger" class="picker-trigger touch-target is-placeholder w-full rounded-xl border border-slate-300 bg-white px-3 py-3.5 text-base text-slate-800 outline-none transition focus:border-star-500 focus:ring-2 focus:ring-star-100">
+          <span id="step1-label" class="picker-trigger-label" data-i18n="step1Placeholder">Select template</span>
+          <svg class="h-5 w-5 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        </button>
       </div>
       <div>
-        <label for="step2-select" class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500" data-i18n="step2Label">Step 2 — Logistics & Closing</label>
-        <select id="step2-select" class="step-select touch-target w-full rounded-xl border border-slate-300 bg-white px-3 py-3.5 text-base text-slate-800 outline-none transition focus:border-star-500 focus:ring-2 focus:ring-star-100">
-          <option value="" data-i18n="step2Placeholder">— Select schedule —</option>
-        </select>
+        <label class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-slate-500" data-i18n="step2Label">Step 2</label>
+        <button type="button" id="step2-trigger" class="picker-trigger touch-target is-placeholder w-full rounded-xl border border-slate-300 bg-white px-3 py-3.5 text-base text-slate-800 outline-none transition focus:border-star-500 focus:ring-2 focus:ring-star-100">
+          <span id="step2-label" class="picker-trigger-label" data-i18n="step2Placeholder">Select schedule</span>
+          <svg class="h-5 w-5 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Full-width picker sheet -->
+    <div id="picker-sheet" class="picker-sheet fixed inset-0 z-50" aria-hidden="true">
+      <div id="picker-backdrop" class="picker-backdrop"></div>
+      <div class="picker-panel shadow-2xl" role="dialog" aria-modal="true">
+        <div class="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3">
+          <h3 id="picker-title" class="text-base font-semibold text-slate-800">Step 1</h3>
+          <button type="button" id="picker-close" class="touch-target rounded-lg px-3 py-1.5 text-sm font-medium text-slate-500">✕</button>
+        </div>
+        <div id="picker-list" class="min-h-0 flex-1 overflow-y-auto overscroll-contain"></div>
       </div>
     </div>
 
     <!-- Message editor -->
-    <section class="panel-canvas flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div class="shrink-0 border-b border-slate-100 px-3 py-2.5 sm:px-4 sm:py-3">
-        <h2 class="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-sm" data-i18n="canvasTitle">Your Reply</h2>
-        <p class="mt-1 text-[11px] leading-snug text-slate-400 sm:text-xs" data-i18n="canvasHint">Fill in the highlighted fields below, then copy.</p>
+    <section class="panel-canvas flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:rounded-2xl">
+      <div class="shrink-0 border-b border-slate-100 px-3 py-2 sm:px-4">
+        <h2 class="text-xs font-semibold uppercase tracking-wide text-slate-500" data-i18n="canvasTitle">Reply</h2>
       </div>
 
-      <div id="canvas" class="canvas-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4">
-        <div id="canvas-empty" class="flex min-h-[160px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
-          <p class="text-3xl opacity-40">📝</p>
-          <p class="mt-3 text-sm font-medium text-slate-600" data-i18n="emptyTitle">No template selected</p>
-          <p class="mt-1 max-w-xs text-xs text-slate-400" data-i18n="emptyHint">Choose Step 1 and Step 2 from the menus above.</p>
+      <div id="canvas" class="canvas-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain p-2 sm:p-4">
+        <div id="canvas-empty" class="flex min-h-[120px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-center">
+          <p class="text-sm text-slate-500" data-i18n="emptyHint">Select Step 1 and Step 2 above.</p>
         </div>
       </div>
 
-      <div class="shrink-0 border-t border-slate-100 bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-4">
+      <div class="shrink-0 border-t border-slate-100 bg-white p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:p-4">
         <button
           type="button"
           id="copy-btn"
@@ -225,17 +326,19 @@
         appTitle: 'Star Phone Fix',
         appSubtitle: 'Yelp Reply Builder',
         clearAll: 'Clear All',
-        step1Label: 'Step 1 — Problem & Price',
-        step2Label: 'Step 2 — Logistics & Closing',
-        step1Placeholder: '— Select a template —',
-        step2Placeholder: '— Select schedule —',
-        canvasTitle: 'Your Reply',
-        canvasHint: 'Fill in the highlighted fields below, then copy.',
-        emptyHint: 'Choose Step 1 and Step 2 from the menus above.',
-        emptyTitle: 'No template selected',
+        step1Label: 'Step 1',
+        step2Label: 'Step 2',
+        step1Placeholder: 'Select template',
+        step2Placeholder: 'Select schedule',
+        canvasTitle: 'Reply',
+        emptyHint: 'Select Step 1 and Step 2 above.',
         copyFinal: 'Copy Text',
-        copied: 'Copied to clipboard!',
-        removeBlock: 'Remove block',
+        copied: 'Copied!',
+        installTitle: 'Install this app',
+        installAndroid: 'Add SPF Replies to your home screen for quick access.',
+        installIos: 'Tap Share, then "Add to Home Screen" to install.',
+        installBtn: 'Install',
+        installLater: 'Not now',
         step1Part: 'Step 1',
         step2Part: 'Step 2',
         tokenLabels: {
@@ -247,57 +350,60 @@
           price2: 'Price 2',
         },
         categories: {
-          noModel: 'No Model Inquiries (No Discount)',
+          noModel: 'No Model Inquiries',
           withModel: 'Known Model — Price & Yelp $20 Off',
           otherIssues: 'Other Common Issues',
-          step2Logistics: 'Step 2 — Logistics & Closing',
+          step2Logistics: 'Logistics',
         },
         templates: {
-          iphoneScreenNoModel: '📱 1. iPhone Screen (Ask model & invite)',
-          samsungScreenNoModel: '📱 2. Samsung Screen (Ask model & invite)',
-          motorolaScreenNoModel: '📱 3. Motorola Screen (Ask model / Trick / Invite)',
-          unknownIssue: '❓ 4. Unknown issue (Free diagnostic)',
-          iphoneBatteryNoModel: '🔋 5. iPhone Battery (Ask model & invite)',
-          samsungBatteryNoModel: '🔋 6. Samsung Battery (Ask model & invite)',
-          iphoneChargingPortNoModel: '🔌 7. iPhone Charging Port (Ask model & invite)',
-          samsungChargingPortNoModel: '🔌 8. Samsung Charging Port (Ask model & invite)',
-          iphoneBackGlassNoModel: '🛑 9. iPhone Back Glass (Ask model & invite)',
-          iphoneScreen1Quality: '🟢 10. iPhone Screen (1 Quality / e.g. iPhone 12)',
-          iphoneScreen2Quality: '🟢 11. iPhone Screen (2 Qualities: LCD vs OLED)',
-          samsungScreen1Quality: '🔵 12. Samsung Screen (1 Quality)',
-          samsungScreen2Quality: '🔵 13. Samsung Screen (2 Qualities: Premium vs Original)',
-          motorolaScreen1Quality: '🟠 14. Motorola Screen (1 Quality / 2 Hours)',
-          iphoneBattery1Quality: '🔋 15. iPhone Battery (With model & price)',
-          samsungBattery1Quality: '🔋 16. Samsung Battery (With model & price)',
-          iphoneChargingPort1Quality: '🔌 17. iPhone Charging Port (With model & price)',
-          samsungChargingPort1Quality: '🔌 18. Samsung Charging Port (With model & price)',
-          iphoneBackGlassLaser: '🛑 19. iPhone Back Glass (Laser — 4 hrs)',
-          iphoneBackGlassFast: '🛑 20. iPhone Back Glass (Fast 45–60 min)',
-          ipadAskModel: '💊 21. iPad (Ask model / iCloud & Carrier tricks)',
-          ipadGlassVsLcd: '💊 22. iPad (Glass vs LCD difference)',
-          waterDamage: '💧 23. Water Damage (Urgent — transparency guide)',
-          openToday: '🕒 A. Open today (Enough time)',
-          closingSoon: '🏃 B. Closing soon (6 PM limit)',
-          longRepair: '⏳ C. Long repair (Recommend before 2 PM)',
-          closedTonight: '🌙 D1. Store closed (Come tomorrow)',
-          closedWeekend: '📅 D2. Closed for the weekend (Until Monday)',
+          iphoneScreenNoModel: '1. iPhone Screen (No model)',
+          samsungScreenNoModel: '2. Samsung Screen (No model)',
+          motorolaScreenNoModel: '3. Motorola Screen (No model)',
+          unknownIssue: '4. Unknown issue',
+          iphoneBatteryNoModel: '5. iPhone Battery (No model)',
+          samsungBatteryNoModel: '6. Samsung Battery (No model)',
+          iphoneChargingPortNoModel: '7. iPhone Charging Port (No model)',
+          samsungChargingPortNoModel: '8. Samsung Charging Port (No model)',
+          iphoneBackGlassNoModel: '9. iPhone Back Glass (No model)',
+          iphoneScreen1Quality: '10. iPhone Screen (1 Quality)',
+          iphoneScreen2Quality: '11. iPhone Screen (2 Qualities)',
+          samsungScreen1Quality: '12. Samsung Screen (1 Quality)',
+          samsungScreen2Quality: '13. Samsung Screen (2 Qualities)',
+          motorolaScreen1Quality: '14. Motorola Screen (1 Quality)',
+          iphoneBattery1Quality: '15. iPhone Battery (With model)',
+          samsungBattery1Quality: '16. Samsung Battery (With model)',
+          iphoneChargingPort1Quality: '17. iPhone Charging Port (With model)',
+          samsungChargingPort1Quality: '18. Samsung Charging Port (With model)',
+          iphoneBackGlassLaser: '19. iPhone Back Glass (Laser)',
+          iphoneBackGlassFast: '20. iPhone Back Glass (Fast)',
+          ipadAskModel: '21. iPad (Ask model)',
+          ipadGlassVsLcd: '22. iPad (Glass vs LCD)',
+          waterDamageNoModel: '23. Water Damage (No model)',
+          waterDamageWithModel: '24. Water Damage (With model)',
+          openToday: 'A. Open today',
+          closingSoon: 'B. Closing soon',
+          longRepair: 'C. Long repair',
+          closedTonight: 'D1. Store closed',
+          closedWeekend: 'D2. Closed weekend',
         },
       },
       es: {
         appTitle: 'Star Phone Fix',
         appSubtitle: 'Constructor de Respuestas Yelp',
         clearAll: 'Limpiar todo',
-        step1Label: 'Paso 1 — Problema y Precio',
-        step2Label: 'Paso 2 — Logística y Cierre',
-        step1Placeholder: '— Elige una plantilla —',
-        step2Placeholder: '— Elige horario —',
-        canvasTitle: 'Tu Respuesta',
-        canvasHint: 'Completa los campos resaltados abajo y copia.',
-        emptyHint: 'Elige Paso 1 y Paso 2 en los menús de arriba.',
-        emptyTitle: 'Sin plantilla seleccionada',
+        step1Label: 'Paso 1',
+        step2Label: 'Paso 2',
+        step1Placeholder: 'Elegir plantilla',
+        step2Placeholder: 'Elegir horario',
+        canvasTitle: 'Respuesta',
+        emptyHint: 'Elige Paso 1 y Paso 2 arriba.',
         copyFinal: 'Copiar Texto',
-        copied: '¡Copiado al portapapeles!',
-        removeBlock: 'Eliminar bloque',
+        copied: '¡Copiado!',
+        installTitle: 'Instalar esta app',
+        installAndroid: 'Agrega SPF Replies a tu pantalla de inicio para acceso rápido.',
+        installIos: 'Toca Compartir y luego "Agregar a pantalla de inicio".',
+        installBtn: 'Instalar',
+        installLater: 'Ahora no',
         step1Part: 'Paso 1',
         step2Part: 'Paso 2',
         tokenLabels: {
@@ -309,40 +415,41 @@
           price2: 'Precio 2',
         },
         categories: {
-          noModel: 'Consultas Sin Modelo (Sin Descuento)',
-          withModel: 'Modelo Conocido — Precio y Descuento Yelp $20',
-          otherIssues: 'Otros Problemas Comunes',
-          step2Logistics: 'Paso 2 — Logística y Cierre',
+          noModel: 'Consultas Sin Modelo',
+          withModel: 'Modelo Conocido — Precio y Yelp $20',
+          otherIssues: 'Otros Problemas',
+          step2Logistics: 'Logística',
         },
         templates: {
-          iphoneScreenNoModel: '📱 1. iPhone Screen (Pedir modelo e invitar)',
-          samsungScreenNoModel: '📱 2. Samsung Screen (Pedir modelo e invitar)',
-          motorolaScreenNoModel: '📱 3. Motorola Screen (Pedir modelo / Truco / Invitar)',
-          unknownIssue: '❓ 4. Problema desconocido (Diagnóstico gratis)',
-          iphoneBatteryNoModel: '🔋 5. iPhone Battery (Pedir modelo e invitar)',
-          samsungBatteryNoModel: '🔋 6. Samsung Battery (Pedir modelo e invitar)',
-          iphoneChargingPortNoModel: '🔌 7. iPhone Charging Port (Pedir modelo e invitar)',
-          samsungChargingPortNoModel: '🔌 8. Samsung Charging Port (Pedir modelo e invitar)',
-          iphoneBackGlassNoModel: '🛑 9. iPhone Back Glass (Pedir modelo e invitar)',
-          iphoneScreen1Quality: '🟢 10. iPhone Screen (1 Calidad / Ej. iPhone 12)',
-          iphoneScreen2Quality: '🟢 11. iPhone Screen (2 Calidades: LCD vs OLED)',
-          samsungScreen1Quality: '🔵 12. Samsung Screen (1 Calidad)',
-          samsungScreen2Quality: '🔵 13. Samsung Screen (2 Calidades: Premium vs Original)',
-          motorolaScreen1Quality: '🟠 14. Motorola Screen (1 Calidad / 2 Horas)',
-          iphoneBattery1Quality: '🔋 15. iPhone Battery (Con modelo y precio)',
-          samsungBattery1Quality: '🔋 16. Samsung Battery (Con modelo y precio)',
-          iphoneChargingPort1Quality: '🔌 17. iPhone Charging Port (Con modelo y precio)',
-          samsungChargingPort1Quality: '🔌 18. Samsung Charging Port (Con modelo y precio)',
-          iphoneBackGlassLaser: '🛑 19. iPhone Back Glass (Láser — 4 hrs)',
-          iphoneBackGlassFast: '🛑 20. iPhone Back Glass (Rápido 45–60 min)',
-          ipadAskModel: '💊 21. iPad (Pedir modelo / Trucos iCloud y Carrier)',
-          ipadGlassVsLcd: '💊 22. iPad (Diferencia Cristal vs LCD)',
-          waterDamage: '💧 23. Daño por agua (Urgente — guía transparente)',
-          openToday: '🕒 A. Abierto hoy (Hay tiempo suficiente)',
-          closingSoon: '🏃 B. A punto de cerrar (Límite 6 PM)',
-          longRepair: '⏳ C. Reparación larga (Antes de las 2 PM)',
-          closedTonight: '🌙 D1. Tienda cerrada (Venir mañana)',
-          closedWeekend: '📅 D2. Cerrado el fin de semana (Hasta el lunes)',
+          iphoneScreenNoModel: '1. iPhone Screen (No model)',
+          samsungScreenNoModel: '2. Samsung Screen (No model)',
+          motorolaScreenNoModel: '3. Motorola Screen (No model)',
+          unknownIssue: '4. Unknown issue',
+          iphoneBatteryNoModel: '5. iPhone Battery (No model)',
+          samsungBatteryNoModel: '6. Samsung Battery (No model)',
+          iphoneChargingPortNoModel: '7. iPhone Charging Port (No model)',
+          samsungChargingPortNoModel: '8. Samsung Charging Port (No model)',
+          iphoneBackGlassNoModel: '9. iPhone Back Glass (No model)',
+          iphoneScreen1Quality: '10. iPhone Screen (1 Quality)',
+          iphoneScreen2Quality: '11. iPhone Screen (2 Qualities)',
+          samsungScreen1Quality: '12. Samsung Screen (1 Quality)',
+          samsungScreen2Quality: '13. Samsung Screen (2 Qualities)',
+          motorolaScreen1Quality: '14. Motorola Screen (1 Quality)',
+          iphoneBattery1Quality: '15. iPhone Battery (With model)',
+          samsungBattery1Quality: '16. Samsung Battery (With model)',
+          iphoneChargingPort1Quality: '17. iPhone Charging Port (With model)',
+          samsungChargingPort1Quality: '18. Samsung Charging Port (With model)',
+          iphoneBackGlassLaser: '19. iPhone Back Glass (Laser)',
+          iphoneBackGlassFast: '20. iPhone Back Glass (Fast)',
+          ipadAskModel: '21. iPad (Ask model)',
+          ipadGlassVsLcd: '22. iPad (Glass vs LCD)',
+          waterDamageNoModel: '23. Water Damage (No model)',
+          waterDamageWithModel: '24. Water Damage (With model)',
+          openToday: 'A. Open today',
+          closingSoon: 'B. Closing soon',
+          longRepair: 'C. Long repair',
+          closedTonight: 'D1. Store closed',
+          closedWeekend: 'D2. Closed weekend',
         },
       },
     };
@@ -437,9 +544,13 @@
         text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! Your iPad model features a separate outer glass and an inner LCD screen. Depending on the damage, you might only need the top outer glass replaced, which is ${{price}}, or both pieces if the display has lines, touch issues, or black spots, which would be ${{price2}}. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
         defaults: { name: '', price: '', price2: '' },
       },
-      waterDamage: {
+      waterDamageNoModel: {
         text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! I am so sorry to hear your {{device}} took a dip in the water.\n\nLiquid damage is highly corrosive and acts very quickly on internal electronics. First and most importantly: please do NOT try to turn it on or plug it into a charger, as this will immediately cause a short circuit and make the damage permanent.\n\nWe want to be completely transparent with you: in most severe water damage cases, the screen does not survive. If your screen is already blank or dark (even if you can still hear sounds or feel vibrations), it is very likely it will need to be replaced. Because of this, the repair cost will start at the price of a new screen, plus whatever internal microsoldering or cleaning is required. If you reply with your exact model, we can give you the base price for the screen, but a total estimate is impossible without opening it up.\n\nTime is critical right now. Your best strategy to save the device or your data is to take it to a professional repair shop as soon as possible to have the battery disconnected and the board cleaned. Whether you bring it to us or to another shop closer to you, please do it immediately!\n\nPlease also keep in mind that severe water damage is not a quick repair you can wait for in the lobby. You will need to leave it with us (or whichever shop you choose) so it can be properly disassembled, cleaned, and evaluated under the microscope.',
         defaults: { name: '', device: 'phone' },
+      },
+      waterDamageWithModel: {
+        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! I am so sorry to hear your {{device}} took a dip in the water.\n\nLiquid damage is highly corrosive and acts very quickly on internal electronics. First and most importantly: please do NOT try to turn it on or plug it into a charger, as this will immediately cause a short circuit and make the damage permanent.\n\nWe want to be completely transparent with you: in most severe water damage cases, the screen does not survive. If your screen is already blank or dark (even if you can still hear sounds or feel vibrations), it is very likely it will need to be replaced. For your {{model}}, the screen replacement alone is ${{price}}. However, water may have also affected other internal components, so the final repair cost will include the screen plus any additional microsoldering or cleaning that may be required — a total estimate is impossible without opening the device.\n\nTime is critical right now. Your best strategy to save the device or your data is to take it to a professional repair shop as soon as possible to have the battery disconnected and the board cleaned. Whether you bring it to us or to another shop closer to you, please do it immediately!\n\nPlease also keep in mind that severe water damage is not a quick repair you can wait for in the lobby. You will need to leave it with us (or whichever shop you choose) so it can be properly disassembled, cleaned, and evaluated under the microscope.',
+        defaults: { name: '', device: 'phone', model: '', price: '' },
       },
       openToday: {
         text: 'We are open today until 6:00 PM, so you are welcome to come in and we can get this fixed for you today. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
@@ -499,7 +610,8 @@
           'iphoneBackGlassFast',
           'ipadAskModel',
           'ipadGlassVsLcd',
-          'waterDamage',
+          'waterDamageNoModel',
+          'waterDamageWithModel',
         ],
       },
       {
@@ -587,17 +699,103 @@
 
     /* ─── State ─── */
     let currentLang = localStorage.getItem('spf-lang') || 'es';
+    let step1Value = '';
+    let step2Value = '';
+    let activePicker = null;
     const blocks = [];
     const slotCache = {};
 
     /* ─── DOM refs ─── */
-    const step1Select = document.getElementById('step1-select');
-    const step2Select = document.getElementById('step2-select');
+    const step1Trigger = document.getElementById('step1-trigger');
+    const step2Trigger = document.getElementById('step2-trigger');
+    const step1LabelEl = document.getElementById('step1-label');
+    const step2LabelEl = document.getElementById('step2-label');
+    const pickerSheet = document.getElementById('picker-sheet');
+    const pickerBackdrop = document.getElementById('picker-backdrop');
+    const pickerClose = document.getElementById('picker-close');
+    const pickerTitle = document.getElementById('picker-title');
+    const pickerList = document.getElementById('picker-list');
     const canvasEl = document.getElementById('canvas');
     const canvasEmptyEl = document.getElementById('canvas-empty');
     const copyBtn = document.getElementById('copy-btn');
     const copyFeedback = document.getElementById('copy-feedback');
     const clearAllBtn = document.getElementById('clear-all-btn');
+    const installBanner = document.getElementById('install-banner');
+    const installTitle = document.getElementById('install-title');
+    const installMessage = document.getElementById('install-message');
+    const installBtn = document.getElementById('install-btn');
+    const installDismiss = document.getElementById('install-dismiss');
+
+    let deferredInstallPrompt = null;
+
+    function isStandaloneApp() {
+      return (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true
+      );
+    }
+
+    function isMobileDevice() {
+      return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
+    }
+
+    function isIosSafari() {
+      const ua = navigator.userAgent;
+      const isIOS = /iPhone|iPad|iPod/i.test(ua);
+      const isSafari = /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS/i.test(ua);
+      return isIOS && isSafari;
+    }
+
+    function hideInstallBanner() {
+      installBanner.classList.remove('is-visible');
+    }
+
+    function showInstallBanner(mode) {
+      if (isStandaloneApp()) return;
+      if (localStorage.getItem('spf-install-dismissed') === '1') return;
+      if (!isMobileDevice()) return;
+
+      installTitle.textContent = t('installTitle');
+      installMessage.textContent = mode === 'ios' ? t('installIos') : t('installAndroid');
+      installBtn.classList.toggle('hidden', mode !== 'android');
+      installBanner.classList.add('is-visible');
+    }
+
+    function initInstallPrompt() {
+      if (isStandaloneApp()) return;
+
+      window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        showInstallBanner('android');
+      });
+
+      installBtn.addEventListener('click', async () => {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        hideInstallBanner();
+      });
+
+      installDismiss.addEventListener('click', () => {
+        localStorage.setItem('spf-install-dismissed', '1');
+        hideInstallBanner();
+      });
+
+      window.setTimeout(() => {
+        if (!deferredInstallPrompt && isIosSafari()) {
+          showInstallBanner('ios');
+        }
+      }, 1200);
+    }
+
+    function registerServiceWorker() {
+      if (!('serviceWorker' in navigator)) return;
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
 
     function t(key) {
       const keys = key.split('.');
@@ -646,65 +844,86 @@
       copyBtn.disabled = !hasBlocks;
     }
 
-    function populateSelect(selectEl, groups, placeholderKey) {
-      const currentValue = selectEl.value;
-      selectEl.innerHTML = '';
+    function updatePickerTriggers() {
+      const setTrigger = (trigger, labelEl, value, placeholderKey) => {
+        if (value) {
+          labelEl.textContent = t('templates.' + value);
+          trigger.classList.remove('is-placeholder');
+        } else {
+          labelEl.textContent = t(placeholderKey);
+          trigger.classList.add('is-placeholder');
+        }
+      };
+      setTrigger(step1Trigger, step1LabelEl, step1Value, 'step1Placeholder');
+      setTrigger(step2Trigger, step2LabelEl, step2Value, 'step2Placeholder');
+    }
 
-      const placeholder = document.createElement('option');
-      placeholder.value = '';
-      placeholder.textContent = t(placeholderKey);
-      selectEl.appendChild(placeholder);
+    function openPicker(which) {
+      activePicker = which;
+      pickerTitle.textContent = t(which === 'step1' ? 'step1Label' : 'step2Label');
+      pickerList.innerHTML = '';
+
+      const groups = which === 'step1' ? STEP1_CATALOG : [STEP2_CATALOG];
+      const currentValue = which === 'step1' ? step1Value : step2Value;
 
       groups.forEach((group) => {
-        const optgroup = document.createElement('optgroup');
-        optgroup.label = t('categories.' + group.category);
+        const heading = document.createElement('div');
+        heading.className = 'sticky top-0 z-10 border-b border-slate-100 bg-slate-50 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-500';
+        heading.textContent = t('categories.' + group.category);
+        pickerList.appendChild(heading);
 
         group.items.forEach((rawItem) => {
           const item = resolveCatalogItem(rawItem);
           if (!item) return;
-          const option = document.createElement('option');
-          option.value = item.id;
-          option.textContent = t('templates.' + item.id);
-          optgroup.appendChild(option);
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'picker-option touch-target' + (item.id === currentValue ? ' is-active' : '');
+          btn.textContent = t('templates.' + item.id);
+          btn.addEventListener('click', () => selectPickerItem(item.id));
+          pickerList.appendChild(btn);
         });
-
-        selectEl.appendChild(optgroup);
       });
 
-      if (currentValue && selectEl.querySelector('option[value="' + currentValue + '"]')) {
-        selectEl.value = currentValue;
+      pickerSheet.classList.add('is-open');
+      pickerSheet.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePicker() {
+      pickerSheet.classList.remove('is-open');
+      pickerSheet.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      activePicker = null;
+    }
+
+    function selectPickerItem(templateId) {
+      cacheAllBlocks();
+      if (activePicker === 'step1') {
+        step1Value = templateId;
+      } else if (activePicker === 'step2') {
+        step2Value = templateId;
       }
-    }
-
-    function renderDropdowns() {
-      populateSelect(step1Select, STEP1_CATALOG, 'step1Placeholder');
-      populateSelect(step2Select, [STEP2_CATALOG], 'step2Placeholder');
-    }
-
-    function cacheAllBlocks() {
-      blocks.forEach((block) => {
-        slotCache[block.templateId] = block.slots.map((slot) => block.slotValues[slot.id]);
-      });
+      closePicker();
+      updatePickerTriggers();
+      rebuildCanvas();
     }
 
     function rebuildCanvas() {
       canvasEl.querySelectorAll('article[data-block-id]').forEach((el) => el.remove());
       blocks.splice(0, blocks.length);
 
-      const step1Id = step1Select.value;
-      const step2Id = step2Select.value;
-
-      if (step1Id) {
-        const tpl = findTemplateById(step1Id);
+      if (step1Value) {
+        const tpl = findTemplateById(step1Value);
         if (tpl) appendBlock(tpl, 'step1');
       }
 
-      if (step2Id) {
-        const tpl = findTemplateById(step2Id);
+      if (step2Value) {
+        const tpl = findTemplateById(step2Value);
         if (tpl) appendBlock(tpl, 'step2');
       }
 
-      canvasEl.classList.toggle('space-y-3', blocks.length > 0);
+      canvasEl.classList.toggle('space-y-2', blocks.length > 0);
       updateEmptyState();
     }
 
@@ -771,21 +990,18 @@
     }
 
     function clearAllBlocks() {
-      step1Select.value = '';
-      step2Select.value = '';
+      step1Value = '';
+      step2Value = '';
       Object.keys(slotCache).forEach((k) => delete slotCache[k]);
+      updatePickerTriggers();
       rebuildCanvas();
       copyFeedback.classList.add('hidden');
     }
 
-    function onStep1Change() {
-      cacheAllBlocks();
-      rebuildCanvas();
-    }
-
-    function onStep2Change() {
-      cacheAllBlocks();
-      rebuildCanvas();
+    function cacheAllBlocks() {
+      blocks.forEach((block) => {
+        slotCache[block.templateId] = block.slots.map((slot) => block.slotValues[slot.id]);
+      });
     }
 
     function getFinalText() {
@@ -837,7 +1053,13 @@
         btn.classList.toggle('text-slate-500', !active);
       });
 
-      renderDropdowns();
+      updatePickerTriggers();
+
+      if (installBanner.classList.contains('is-visible')) {
+        const mode = installBtn.classList.contains('hidden') ? 'ios' : 'android';
+        installTitle.textContent = t('installTitle');
+        installMessage.textContent = mode === 'ios' ? t('installIos') : t('installAndroid');
+      }
 
       blocks.forEach((block) => {
         const newCard = createBlockElement(block);
@@ -849,13 +1071,18 @@
     /* ─── Event listeners ─── */
     document.getElementById('lang-en').addEventListener('click', () => applyLanguage('en'));
     document.getElementById('lang-es').addEventListener('click', () => applyLanguage('es'));
-    step1Select.addEventListener('change', onStep1Change);
-    step2Select.addEventListener('change', onStep2Change);
+    step1Trigger.addEventListener('click', () => openPicker('step1'));
+    step2Trigger.addEventListener('click', () => openPicker('step2'));
+    pickerBackdrop.addEventListener('click', closePicker);
+    pickerClose.addEventListener('click', closePicker);
     clearAllBtn.addEventListener('click', clearAllBlocks);
     copyBtn.addEventListener('click', copyFinalText);
 
     /* ─── Init ─── */
+    updatePickerTriggers();
     applyLanguage(currentLang);
+    initInstallPrompt();
+    registerServiceWorker();
   </script>
 </body>
 </html>
