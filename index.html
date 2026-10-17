@@ -202,6 +202,45 @@
         margin-inline: auto;
       }
     }
+    .option-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.75rem;
+      background: #fff;
+      padding: 0.6rem 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      line-height: 1.2;
+      color: #475569;
+      text-align: left;
+    }
+    .option-toggle-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.1rem;
+      height: 1.1rem;
+      flex-shrink: 0;
+      border: 2px solid #94a3b8;
+      border-radius: 0.3rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .option-toggle[aria-pressed="true"] {
+      border-color: #2563eb;
+      background: #eff6ff;
+      color: #1e40af;
+    }
+    .option-toggle[aria-pressed="true"] .option-toggle-box {
+      border-color: #2563eb;
+      background: #2563eb;
+    }
+    .option-toggle[aria-pressed="true"] .option-toggle-box::after {
+      content: '✓';
+    }
     .install-banner {
       display: none;
     }
@@ -276,6 +315,20 @@
           <svg class="h-5 w-5 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </button>
       </div>
+      <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
+        <button type="button" id="followup-toggle" class="option-toggle touch-target" aria-pressed="false">
+          <span class="option-toggle-box" aria-hidden="true"></span>
+          <span data-i18n="followUpToggle">Follow-up reply</span>
+        </button>
+        <button type="button" id="promo-toggle" class="option-toggle touch-target" aria-pressed="false">
+          <span class="option-toggle-box" aria-hidden="true"></span>
+          <span data-i18n="promoToggle">Yelp $20 off</span>
+        </button>
+        <button type="button" id="special-order-toggle" class="option-toggle touch-target" aria-pressed="false">
+          <span class="option-toggle-box" aria-hidden="true"></span>
+          <span data-i18n="specialOrderToggle">Order part</span>
+        </button>
+      </div>
     </div>
 
     <!-- Full-width picker sheet -->
@@ -339,6 +392,11 @@
         installIos: 'Tap Share, then "Add to Home Screen" to install.',
         installBtn: 'Install',
         installLater: 'Not now',
+        followUpToggle: 'Follow-up reply',
+        promoToggle: 'Yelp $20 off',
+        specialOrderToggle: 'Order part',
+        autoOption: 'Auto (by current time)',
+        autoTag: 'Auto',
         step1Part: 'Step 1',
         step2Part: 'Step 2',
         tokenLabels: {
@@ -348,10 +406,17 @@
           price: 'Price',
           price1: 'Price 1',
           price2: 'Price 2',
+          repair: 'repair',
+          time: 'Time',
+          closeTime: 'Close time',
+          nextCloseTime: 'Close time',
+          nextOpenDay: 'tomorrow',
+          nextCutoff: 'Cut-off',
+          eta: 'Arrival time',
         },
         categories: {
           noModel: 'No Model Inquiries',
-          withModel: 'Known Model — Price & Yelp $20 Off',
+          withModel: 'Known Model — Price',
           otherIssues: 'Other Common Issues',
           step2Logistics: 'Logistics',
         },
@@ -380,11 +445,16 @@
           ipadGlassVsLcd: '22. iPad (Glass vs LCD)',
           waterDamageNoModel: '23. Water Damage (No model)',
           waterDamageWithModel: '24. Water Damage (With model)',
+          pixelScreenNoModel: '25. Google Pixel Screen (No model)',
+          pixelScreen1Quality: '26. Google Pixel Screen (With model)',
+          anyDeviceNoModel: '27. Any device / repair (No model)',
+          anyDeviceWithModel: '28. Any device / repair (With model)',
           openToday: 'A. Open today',
           closingSoon: 'B. Closing soon',
           longRepair: 'C. Long repair',
           closedTonight: 'D1. Store closed',
           closedWeekend: 'D2. Closed weekend',
+          openingSoon: 'E. Opening soon',
         },
       },
       es: {
@@ -404,6 +474,11 @@
         installIos: 'Toca Compartir y luego "Agregar a pantalla de inicio".',
         installBtn: 'Instalar',
         installLater: 'Ahora no',
+        followUpToggle: 'Seguimiento',
+        promoToggle: 'Descuento Yelp $20',
+        specialOrderToggle: 'Pedir repuesto',
+        autoOption: 'Automático (según la hora)',
+        autoTag: 'Auto',
         step1Part: 'Paso 1',
         step2Part: 'Paso 2',
         tokenLabels: {
@@ -413,10 +488,17 @@
           price: 'Precio',
           price1: 'Precio 1',
           price2: 'Precio 2',
+          repair: 'reparación',
+          time: 'Tiempo',
+          closeTime: 'Hora cierre',
+          nextCloseTime: 'Hora cierre',
+          nextOpenDay: 'día',
+          nextCutoff: 'Hora límite',
+          eta: 'Tiempo de llegada',
         },
         categories: {
           noModel: 'Consultas Sin Modelo',
-          withModel: 'Modelo Conocido — Precio y Yelp $20',
+          withModel: 'Modelo Conocido — Precio',
           otherIssues: 'Otros Problemas',
           step2Logistics: 'Logística',
         },
@@ -445,11 +527,16 @@
           ipadGlassVsLcd: '22. iPad (Glass vs LCD)',
           waterDamageNoModel: '23. Water Damage (No model)',
           waterDamageWithModel: '24. Water Damage (With model)',
+          pixelScreenNoModel: '25. Google Pixel Screen (No model)',
+          pixelScreen1Quality: '26. Google Pixel Screen (With model)',
+          anyDeviceNoModel: '27. Any device / repair (No model)',
+          anyDeviceWithModel: '28. Any device / repair (With model)',
           openToday: 'A. Open today',
           closingSoon: 'B. Closing soon',
           longRepair: 'C. Long repair',
           closedTonight: 'D1. Store closed',
           closedWeekend: 'D2. Closed weekend',
+          openingSoon: 'E. Opening soon',
         },
       },
     };
@@ -457,119 +544,153 @@
     /* ─── Message templates (English — sent to Yelp customers) ─── */
     const MESSAGES = {
       iphoneScreenNoModel: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! To give you an accurate price for your screen replacement, could you please let us know the exact iPhone model you have (for example, iPhone 13, 14 Pro, etc.)? If the screen is completely blank or you are unsure of the exact model, you are more than welcome to bring the device to the shop! We will gladly identify it for you and provide a quote on the spot without any commitment.',
+        text: 'To give you an accurate price for your screen replacement, could you please let us know the exact iPhone model you have (for example, iPhone 13, 14 Pro, etc.)? If the screen is completely blank or you are unsure of the exact model, you are more than welcome to bring the device to the shop! We will gladly identify it for you and provide a quote on the spot without any commitment.',
         defaults: { name: '' },
       },
       samsungScreenNoModel: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! Samsung screen prices vary greatly depending on the exact model and version. Could you please let us know your specific Samsung model? If the screen is completely black and you can\'t check the settings, feel free to stop by the shop. We can identify the device for you and give you an exact quote right away.',
+        text: 'Samsung screen prices vary greatly depending on the exact model and version. Could you please let us know your specific Samsung model? If the screen is completely black and you can\'t check the settings, feel free to stop by the shop. We can identify the device for you and give you an exact quote right away.',
         defaults: { name: '' },
       },
       motorolaScreenNoModel: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! Motorola has many different series, so to give you the exact price, we need the specific model. If your screen is still partly visible, you can find the model by going to Settings > About phone > Model (or Device name). If the screen is completely black or you aren\'t sure, please feel free to bring it to the shop! We will gladly identify it for you and provide an accurate quote without any commitment.',
+        text: 'Motorola has many different series, so to give you the exact price, we need the specific model. If your screen is still partly visible, you can find the model by going to Settings > About phone > Model (or Device name). If the screen is completely black or you aren\'t sure, please feel free to bring it to the shop! We will gladly identify it for you and provide an accurate quote without any commitment.',
         defaults: { name: '' },
       },
       unknownIssue: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! To better assist you, could you please provide a few more details about what your device is experiencing and its exact model? To ensure an accurate and reliable solution, we invite you to bring your device to our shop for a completely free diagnostic with no obligation or commitment on your part. Our technicians will inspect it thoroughly to give you an exact price.',
+        text: 'To better assist you, could you please provide a few more details about what your device is experiencing and its exact model? To ensure an accurate and reliable solution, we invite you to bring your device to our shop for a completely free diagnostic with no obligation or commitment on your part. Our technicians will inspect it thoroughly to give you an exact price.',
         defaults: { name: '' },
       },
       iphoneBatteryNoModel: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! iPhone battery replacement prices vary depending on the exact model. Could you please let us know which iPhone you have (for example, iPhone 13, 14 Pro, etc.)? If you are unsure of the exact model, you are more than welcome to bring the device to the shop! We will gladly identify it for you and provide a quote on the spot without any commitment.',
+        text: 'iPhone battery replacement prices vary depending on the exact model. Could you please let us know which iPhone you have (for example, iPhone 13, 14 Pro, etc.)? If you are unsure of the exact model, you are more than welcome to bring the device to the shop! We will gladly identify it for you and provide a quote on the spot without any commitment.',
         defaults: { name: '' },
       },
       samsungBatteryNoModel: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! Samsung battery prices vary depending on the exact model and series. Could you please let us know your specific Samsung model? If you are unsure of the exact model, feel free to stop by the shop — we can identify the device for you and give you an exact quote right away.',
+        text: 'Samsung battery prices vary depending on the exact model and series. Could you please let us know your specific Samsung model? If you are unsure of the exact model, feel free to stop by the shop — we can identify the device for you and give you an exact quote right away.',
         defaults: { name: '' },
       },
       iphoneChargingPortNoModel: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! iPhone charging port replacement prices vary depending on the exact model. Could you please let us know which iPhone you have (for example, iPhone 13, 14 Pro, etc.)? If you are unsure of the exact model, you are more than welcome to bring the device to the shop! We will gladly identify it for you and provide a quote on the spot without any commitment.',
+        text: 'iPhone charging port replacement prices vary depending on the exact model. Could you please let us know which iPhone you have (for example, iPhone 13, 14 Pro, etc.)? If you are unsure of the exact model, you are more than welcome to bring the device to the shop! We will gladly identify it for you and provide a quote on the spot without any commitment.',
         defaults: { name: '' },
       },
       samsungChargingPortNoModel: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! Samsung charging port prices vary depending on the exact model and series. Could you please let us know your specific Samsung model? If you are unsure of the exact model, feel free to stop by the shop — we can identify the device for you and give you an exact quote right away.',
+        text: 'Samsung charging port prices vary depending on the exact model and series. Could you please let us know your specific Samsung model? If you are unsure of the exact model, feel free to stop by the shop — we can identify the device for you and give you an exact quote right away.',
         defaults: { name: '' },
       },
       iphoneBackGlassNoModel: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! iPhone back glass replacement prices vary depending on the exact model and whether a laser or standard process is needed. Could you please let us know which iPhone you have (for example, iPhone 13, 14 Pro, etc.)? If you are unsure of the exact model, you are more than welcome to bring the device to the shop! We will gladly identify it for you and provide a quote on the spot without any commitment.',
+        text: 'iPhone back glass replacement prices vary depending on the exact model and whether a laser or standard process is needed. Could you please let us know which iPhone you have (for example, iPhone 13, 14 Pro, etc.)? If you are unsure of the exact model, you are more than welcome to bring the device to the shop! We will gladly identify it for you and provide a quote on the spot without any commitment.',
         defaults: { name: '' },
       },
       iphoneScreen1Quality: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! The screen replacement cost for your {{model}} is ${{price}}. This repair usually takes about 30 to 45 minutes. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        text: 'The screen replacement cost for your {{model}} is ${{price}}. This repair usually takes about 30 to 45 minutes.',
+        promo: true,
         defaults: { name: '', model: '', price: '' },
       },
       iphoneScreen2Quality: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! For your {{model}}, we offer two screen options depending on your needs.\n\nOur budget-friendly LCD option is ${{price1}}. Please note that because LCD technology is different from the original screen, the display will be slightly thicker and the screen won\'t be quite as bright. We usually only recommend this option if you are planning to use the phone as a trade-in or if you absolutely need a temporary, cost-effective fix.\n\nOur Premium OLED option is ${{price2}}. This is the quality we highly recommend if you plan to keep using the phone. OLED screens perfectly match the original display\'s thickness, vivid colors, deep blacks, and brightness, ensuring your phone feels and functions just like it did before it broke.\n\nBoth options usually take about 30 to 45 minutes. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        text: 'For your {{model}}, we offer two screen options depending on your needs.\n\nOur budget-friendly LCD option is ${{price1}}. Please note that because LCD technology is different from the original screen, the display will be slightly thicker and the screen won\'t be quite as bright. We usually only recommend this option if you are planning to use the phone as a trade-in or if you absolutely need a temporary, cost-effective fix.\n\nOur Premium OLED option is ${{price2}}. This is the quality we highly recommend if you plan to keep using the phone. OLED screens perfectly match the original display\'s thickness, vivid colors, deep blacks, and brightness, ensuring your phone feels and functions just like it did before it broke.\n\nBoth options usually take about 30 to 45 minutes.',
+        promo: true,
         defaults: { name: '', model: '', price1: '', price2: '' },
       },
       samsungScreen1Quality: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! The screen replacement cost for your Samsung {{model}} is ${{price}}. This repair takes about 1 hour to complete. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        text: 'The screen replacement cost for your Samsung {{model}} is ${{price}}. This repair takes about 1 hour to complete.',
+        promo: true,
         defaults: { name: '', model: '', price: '' },
       },
       samsungScreen2Quality: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! For your Samsung {{model}}, we offer two excellent OLED screen options depending on your preference: our premium OLED screen is ${{price1}}, and our original Service Pack OLED screen is ${{price2}}. Both repairs take about 1 hour to complete. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        text: 'For your Samsung {{model}}, we offer two excellent OLED screen options depending on your preference: our premium OLED screen is ${{price1}}, and our original Service Pack OLED screen is ${{price2}}. Both repairs take about 1 hour to complete.',
+        promo: true,
         defaults: { name: '', model: '', price1: '', price2: '' },
       },
       motorolaScreen1Quality: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! The screen replacement cost for your Motorola {{model}} is ${{price}}. This repair takes about 2 hours to complete. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        text: 'The screen replacement cost for your Motorola {{model}} is ${{price}}. This repair takes about 2 hours to complete.',
+        promo: true,
         defaults: { name: '', model: '', price: '' },
       },
       iphoneBattery1Quality: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! A new battery will definitely help your {{model}} hold a charge like it used to. The battery replacement cost is ${{price}}. This repair usually takes about 30 to 45 minutes. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        text: 'A new battery will definitely help your {{model}} hold a charge like it used to. The battery replacement cost is ${{price}}. This repair usually takes about 30 to 45 minutes.',
+        promo: true,
         defaults: { name: '', model: '', price: '' },
       },
       samsungBattery1Quality: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! A new battery will definitely help your Samsung {{model}} hold a charge like it used to. The battery replacement cost is ${{price}}. This repair usually takes about 30 to 45 minutes. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        text: 'A new battery will definitely help your Samsung {{model}} hold a charge like it used to. The battery replacement cost is ${{price}}. This repair usually takes about 30 to 45 minutes.',
+        promo: true,
         defaults: { name: '', model: '', price: '' },
       },
       iphoneChargingPort1Quality: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! When a device struggles to charge, replacing the charging port resolves the issue in the vast majority of cases. The charging port replacement cost for your {{model}} is ${{price}}. While occasionally charging problems can be related to deeper motherboard issues, our technicians will thoroughly test your device to confirm and ensure we only fix what is necessary. The port repair takes about 45 to 60 minutes. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        text: 'When a device struggles to charge, replacing the charging port resolves the issue in the vast majority of cases. The charging port replacement cost for your {{model}} is ${{price}}. While occasionally charging problems can be related to deeper motherboard issues, our technicians will thoroughly test your device to confirm and ensure we only fix what is necessary. The port repair takes about 45 to 60 minutes.',
+        promo: true,
         defaults: { name: '', model: '', price: '' },
       },
       samsungChargingPort1Quality: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! When a device struggles to charge, replacing the charging port resolves the issue in the vast majority of cases. The charging port replacement cost for your Samsung {{model}} is ${{price}}. While occasionally charging problems can be related to deeper motherboard issues, our technicians will thoroughly test your device to confirm and ensure we only fix what is necessary. The port repair takes about 45 to 60 minutes. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        text: 'When a device struggles to charge, replacing the charging port resolves the issue in the vast majority of cases. The charging port replacement cost for your Samsung {{model}} is ${{price}}. While occasionally charging problems can be related to deeper motherboard issues, our technicians will thoroughly test your device to confirm and ensure we only fix what is necessary. The port repair takes about 45 to 60 minutes.',
+        promo: true,
         defaults: { name: '', model: '', price: '' },
       },
       iphoneBackGlassLaser: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! The back glass replacement is ${{price}}. Please note that this is a slow and delicate process that cannot be rushed; we must thoroughly clean the frame, apply specialized adhesive, and allow it to dry properly, which takes about 4 hours in total. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        text: 'The back glass replacement is ${{price}}. Please note that this is a slow and delicate process that cannot be rushed; we must thoroughly clean the frame, apply specialized adhesive, and allow it to dry properly, which takes about 4 hours in total.',
+        promo: true,
         defaults: { name: '', price: '120' },
       },
       iphoneBackGlassFast: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! The back glass replacement is ${{price}} and the repair takes about 45 to 60 minutes to complete. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        text: 'The back glass replacement is ${{price}} and the repair takes about 45 to 60 minutes to complete.',
+        promo: true,
         defaults: { name: '', price: '120' },
       },
+      pixelScreenNoModel: {
+        text: 'Google Pixel screen prices vary depending on the exact model (for example, Pixel 7, Pixel 8 Pro, Pixel 9a, etc.). Could you please let us know which Pixel you have? If your screen is still partly visible, you can find the model by going to Settings > About phone > Model. If the screen is completely black or you aren\'t sure, please feel free to bring it to the shop! We will gladly identify it for you and provide an accurate quote without any commitment.',
+        defaults: { name: '' },
+      },
+      pixelScreen1Quality: {
+        text: 'The screen replacement cost for your Google {{model}} is ${{price}}. This repair takes about {{time}} to complete.',
+        promo: true,
+        defaults: { name: '', model: '', price: '', time: '1 to 2 hours' },
+      },
+      anyDeviceNoModel: {
+        text: 'To give you an accurate price for your {{repair}}, could you please let us know the exact model of your {{device}}? You can usually find it under Settings > About phone (or Settings > General > About on Apple devices). If you are unsure of the exact model, you are more than welcome to bring the device to the shop! We will gladly identify it for you and provide a quote on the spot without any commitment.',
+        defaults: { name: '', repair: 'repair', device: 'phone' },
+      },
+      anyDeviceWithModel: {
+        text: 'The {{repair}} cost for your {{model}} is ${{price}}. This repair takes about {{time}} to complete.',
+        promo: true,
+        defaults: { name: '', repair: 'screen replacement', model: '', price: '', time: '1 hour' },
+      },
       ipadAskModel: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! To give you an accurate quote for your iPad, could you please let us know the exact model, the \'A\' number, or the Serial Number? You can usually find this printed on the back of the iPad, right below the Apple logo.\n\nIf the back is unreadable and your screen is completely black or broken, you can find your iPad model on an iPhone (if both devices use the same Apple ID) by going to Settings, tapping your iCloud name at the top, and scrolling to the bottom to see your device list. You can also log into your cellular carrier account (AT&T, T-Mobile, Verizon, etc.) to view your active devices. If the screen is still functional, you can check under Settings > General > About.',
+        text: 'To give you an accurate quote for your iPad, could you please let us know the exact model, the \'A\' number, or the Serial Number? You can usually find this printed on the back of the iPad, right below the Apple logo.\n\nIf the back is unreadable and your screen is completely black or broken, you can find your iPad model on an iPhone (if both devices use the same Apple ID) by going to Settings, tapping your iCloud name at the top, and scrolling to the bottom to see your device list. You can also log into your cellular carrier account (AT&T, T-Mobile, Verizon, etc.) to view your active devices. If the screen is still functional, you can check under Settings > General > About.',
         defaults: { name: '' },
       },
       ipadGlassVsLcd: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! Your iPad model features a separate outer glass and an inner LCD screen. Depending on the damage, you might only need the top outer glass replaced, which is ${{price}}, or both pieces if the display has lines, touch issues, or black spots, which would be ${{price2}}. We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!',
+        text: 'Your iPad model features a separate outer glass and an inner LCD screen. Depending on the damage, you might only need the top outer glass replaced, which is ${{price}}, or both pieces if the display has lines, touch issues, or black spots, which would be ${{price2}}.',
+        promo: true,
         defaults: { name: '', price: '', price2: '' },
       },
       waterDamageNoModel: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! I am so sorry to hear your {{device}} took a dip in the water.\n\nLiquid damage is highly corrosive and acts very quickly on internal electronics. First and most importantly: please do NOT try to turn it on or plug it into a charger, as this will immediately cause a short circuit and make the damage permanent.\n\nWe want to be completely transparent with you: in most severe water damage cases, the screen does not survive. If your screen is already blank or dark (even if you can still hear sounds or feel vibrations), it is very likely it will need to be replaced. Because of this, the repair cost will start at the price of a new screen, plus whatever internal microsoldering or cleaning is required. If you reply with your exact model, we can give you the base price for the screen, but a total estimate is impossible without opening it up.\n\nTime is critical right now. Your best strategy to save the device or your data is to take it to a professional repair shop as soon as possible to have the battery disconnected and the board cleaned. Whether you bring it to us or to another shop closer to you, please do it immediately!\n\nPlease also keep in mind that severe water damage is not a quick repair you can wait for in the lobby. You will need to leave it with us (or whichever shop you choose) so it can be properly disassembled, cleaned, and evaluated under the microscope.',
+        text: 'I am so sorry to hear your {{device}} took a dip in the water.\n\nLiquid damage is highly corrosive and acts very quickly on internal electronics. First and most importantly: please do NOT try to turn it on or plug it into a charger, as this will immediately cause a short circuit and make the damage permanent.\n\nWe want to be completely transparent with you: in most severe water damage cases, the screen does not survive. If your screen is already blank or dark (even if you can still hear sounds or feel vibrations), it is very likely it will need to be replaced. Because of this, the repair cost will start at the price of a new screen, plus whatever internal microsoldering or cleaning is required. If you reply with your exact model, we can give you the base price for the screen, but a total estimate is impossible without opening it up.\n\nTime is critical right now. Your best strategy to save the device or your data is to take it to a professional repair shop as soon as possible to have the battery disconnected and the board cleaned. Whether you bring it to us or to another shop closer to you, please do it immediately!\n\nPlease also keep in mind that severe water damage is not a quick repair you can wait for in the lobby. You will need to leave it with us (or whichever shop you choose) so it can be properly disassembled, cleaned, and evaluated under the microscope.',
         defaults: { name: '', device: 'phone' },
       },
       waterDamageWithModel: {
-        text: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! I am so sorry to hear your {{device}} took a dip in the water.\n\nLiquid damage is highly corrosive and acts very quickly on internal electronics. First and most importantly: please do NOT try to turn it on or plug it into a charger, as this will immediately cause a short circuit and make the damage permanent.\n\nWe want to be completely transparent with you: in most severe water damage cases, the screen does not survive. If your screen is already blank or dark (even if you can still hear sounds or feel vibrations), it is very likely it will need to be replaced. For your {{model}}, the screen replacement alone is ${{price}}. However, water may have also affected other internal components, so the final repair cost will include the screen plus any additional microsoldering or cleaning that may be required — a total estimate is impossible without opening the device.\n\nTime is critical right now. Your best strategy to save the device or your data is to take it to a professional repair shop as soon as possible to have the battery disconnected and the board cleaned. Whether you bring it to us or to another shop closer to you, please do it immediately!\n\nPlease also keep in mind that severe water damage is not a quick repair you can wait for in the lobby. You will need to leave it with us (or whichever shop you choose) so it can be properly disassembled, cleaned, and evaluated under the microscope.',
+        text: 'I am so sorry to hear your {{device}} took a dip in the water.\n\nLiquid damage is highly corrosive and acts very quickly on internal electronics. First and most importantly: please do NOT try to turn it on or plug it into a charger, as this will immediately cause a short circuit and make the damage permanent.\n\nWe want to be completely transparent with you: in most severe water damage cases, the screen does not survive. If your screen is already blank or dark (even if you can still hear sounds or feel vibrations), it is very likely it will need to be replaced. For your {{model}}, the screen replacement alone is ${{price}}. However, water may have also affected other internal components, so the final repair cost will include the screen plus any additional microsoldering or cleaning that may be required — a total estimate is impossible without opening the device.\n\nTime is critical right now. Your best strategy to save the device or your data is to take it to a professional repair shop as soon as possible to have the battery disconnected and the board cleaned. Whether you bring it to us or to another shop closer to you, please do it immediately!\n\nPlease also keep in mind that severe water damage is not a quick repair you can wait for in the lobby. You will need to leave it with us (or whichever shop you choose) so it can be properly disassembled, cleaned, and evaluated under the microscope.',
         defaults: { name: '', device: 'phone', model: '', price: '' },
       },
       openToday: {
-        text: 'We are open today until 6:00 PM, so you are welcome to come in and we can get this fixed for you today. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
+        text: 'We are open today until {{closeTime}}, so you are welcome to come in and we can get this fixed for you today. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
         defaults: {},
       },
       closingSoon: {
-        text: 'We are closing today at 6:00 PM. If you come in shortly, we might be able to squeeze it in, or you are welcome to drop it off and pick it up tomorrow. Alternatively, you can bring it in tomorrow morning when we open at 10:00 AM. We accept walk-ins until 6:00 PM so you can plan your visit accordingly. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
+        text: 'We are closing today at {{closeTime}}. If you come in shortly, we might be able to squeeze it in, or you are welcome to drop it off and pick it up {{nextOpenDay}}. Alternatively, you can bring it in {{nextOpenDay}} morning when we open at 10:00 AM. We accept walk-ins until {{nextCloseTime}} so you can plan your visit accordingly. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
         defaults: {},
       },
       longRepair: {
-        text: 'Because of the time required for this process and our closing time today at 6:00 PM, we wouldn\'t be able to finish it this afternoon. You can drop it off today to be ready tomorrow, or we highly recommend bringing it in tomorrow as early as possible, preferably before 2:00 PM, to have it completed on the exact same day. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
+        text: 'Because of the time required for this process and our closing time today at {{closeTime}}, we wouldn\'t be able to finish it this afternoon. You can drop it off today to be ready {{nextOpenDay}}, or we highly recommend bringing it in {{nextOpenDay}} as early as possible, preferably before {{nextCutoff}}, to have it completed on the exact same day. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
         defaults: {},
       },
       closedTonight: {
-        text: 'The shop is currently closed for the day, but we would love to help you tomorrow. We open at 10:00 AM and accept walk-ins until 6:00 PM so you can plan your visit ahead. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
+        text: 'The shop is currently closed for the day, but we would love to help you tomorrow. We open at 10:00 AM and accept walk-ins until {{nextCloseTime}} so you can plan your visit ahead. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
         defaults: {},
       },
       closedWeekend: {
         text: 'The shop is currently closed for the weekend, but we would love to help you on Monday! We open at 10:00 AM and accept walk-ins until 6:00 PM so you can plan your visit ahead. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
+        defaults: {},
+      },
+      openingSoon: {
+        text: 'We open today at 10:00 AM, so you are welcome to come in as soon as we open and we can get this fixed for you today. We accept walk-ins until {{closeTime}}. Visit us at 405 W 29th St, Hialeah, FL 33012. No appointment is needed!',
         defaults: {},
       },
     };
@@ -587,6 +708,8 @@
           'iphoneChargingPortNoModel',
           'samsungChargingPortNoModel',
           'iphoneBackGlassNoModel',
+          'pixelScreenNoModel',
+          'anyDeviceNoModel',
         ],
       },
       {
@@ -601,6 +724,8 @@
           'samsungBattery1Quality',
           'iphoneChargingPort1Quality',
           'samsungChargingPort1Quality',
+          'pixelScreen1Quality',
+          'anyDeviceWithModel',
         ],
       },
       {
@@ -623,6 +748,7 @@
           'longRepair',
           'closedTonight',
           'closedWeekend',
+          'openingSoon',
         ],
       },
     ];
@@ -630,15 +756,70 @@
     const STEP1_CATALOG = CATALOG.filter((g) => g.category !== 'step2Logistics');
     const STEP2_CATALOG = CATALOG.find((g) => g.category === 'step2Logistics');
 
-    /* ─── Global token defaults (fallback) ─── */
-    const GLOBAL_DEFAULTS = {
-      name: '',
-      device: 'phone',
-      model: '',
-      price: '',
-      price1: '',
-      price2: '',
+    /* ─── Greeting & promo (added around Step 1 templates) ─── */
+    const OPENINGS = {
+      new: 'Hi{{name}}, thank you for reaching out to Star Phone Fix! ',
+      followUp: 'Hi{{name}}, thank you for getting back to us! ',
     };
+    const YELP_PROMO = 'We are currently running a special promotion for Yelp users: if you mention Yelp when you visit the shop, we will apply a $20 discount to your repair cost!';
+    const SPECIAL_ORDER = 'Please note that this part needs to be special ordered, and it usually arrives in {{eta}}. Before we can place the order, we need you to bring the device to the shop so we can double-check the exact model and confirm the problem in person. For this reason, we are unable to take orders or payments over the phone. Once everything is confirmed at the shop, we will order the part and let you know as soon as it arrives.';
+
+    /* Values that carry over when switching templates */
+    const SHARED_TOKENS = ['name', 'device', 'model'];
+
+    /* Store hours (24h): Mon–Fri 10–6, Sat 10–5, Sun closed */
+    const STORE_HOURS = { 0: null, 1: [10, 18], 2: [10, 18], 3: [10, 18], 4: [10, 18], 5: [10, 18], 6: [10, 17] };
+    const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const LONG_REPAIR_HOURS = 4;
+    const CLOSING_SOON_HOURS = 1;
+
+    function formatHour(hour) {
+      return (hour % 12 || 12) + ':00 ' + (hour < 12 ? 'AM' : 'PM');
+    }
+
+    function nextOpenDay(day) {
+      let next = (day + 1) % 7;
+      while (!STORE_HOURS[next]) next = (next + 1) % 7;
+      return next;
+    }
+
+    /* Picks the Step 2 template that matches the current system time */
+    function getAutoSchedule(now = new Date()) {
+      const day = now.getDay();
+      const hours = STORE_HOURS[day];
+      const hour = now.getHours() + now.getMinutes() / 60;
+
+      if (!hours) return 'closedWeekend';
+      if (hour >= hours[1]) {
+        return nextOpenDay(day) === (day + 1) % 7 ? 'closedTonight' : 'closedWeekend';
+      }
+      if (hour < hours[0]) return 'openingSoon';
+      if (step1Value === 'iphoneBackGlassLaser' && hour > hours[1] - LONG_REPAIR_HOURS) return 'longRepair';
+      if (hour >= hours[1] - CLOSING_SOON_HOURS) return 'closingSoon';
+      return 'openToday';
+    }
+
+    /* ─── Global token defaults (fallback) ─── */
+    function getGlobalDefaults() {
+      const today = new Date().getDay();
+      const nextDay = nextOpenDay(today);
+      const nextClose = STORE_HOURS[nextDay][1];
+      return {
+        name: '',
+        device: 'phone',
+        model: '',
+        price: '',
+        price1: '',
+        price2: '',
+        repair: 'repair',
+        time: '1 hour',
+        eta: '2 to 3 business days',
+        closeTime: formatHour((STORE_HOURS[today] || STORE_HOURS[nextDay])[1]),
+        nextCloseTime: formatHour(nextClose),
+        nextOpenDay: nextDay === (today + 1) % 7 ? 'tomorrow' : 'on ' + DAY_NAMES[nextDay],
+        nextCutoff: formatHour(nextClose - LONG_REPAIR_HOURS),
+      };
+    }
 
     const TOKEN_REGEX = /\{\{(\w+)\}\}/g;
 
@@ -702,8 +883,13 @@
     let step1Value = '';
     let step2Value = '';
     let activePicker = null;
+    let promoEnabled = localStorage.getItem('spf-promo') !== '0';
+    let followUpEnabled = false;
+    let specialOrderEnabled = false;
+    let step2Auto = true;
     const blocks = [];
     const slotCache = {};
+    const sharedValues = {};
 
     /* ─── DOM refs ─── */
     const step1Trigger = document.getElementById('step1-trigger');
@@ -720,6 +906,9 @@
     const copyBtn = document.getElementById('copy-btn');
     const copyFeedback = document.getElementById('copy-feedback');
     const clearAllBtn = document.getElementById('clear-all-btn');
+    const followUpToggle = document.getElementById('followup-toggle');
+    const promoToggle = document.getElementById('promo-toggle');
+    const specialOrderToggle = document.getElementById('special-order-toggle');
     const installBanner = document.getElementById('install-banner');
     const installTitle = document.getElementById('install-title');
     const installMessage = document.getElementById('install-message');
@@ -810,6 +999,13 @@
       return { id: templateId, text: msg.text, defaults: msg.defaults };
     }
 
+    function withStep1Extras(templateItem) {
+      const opening = followUpEnabled ? OPENINGS.followUp : OPENINGS.new;
+      const promo = promoEnabled && MESSAGES[templateItem.id].promo ? ' ' + YELP_PROMO : '';
+      const specialOrder = specialOrderEnabled ? '\n\n' + SPECIAL_ORDER : '';
+      return { ...templateItem, text: opening + templateItem.text + promo + specialOrder };
+    }
+
     function resolveCatalogItem(item) {
       if (typeof item === 'string') return findTemplateById(item);
       return item;
@@ -825,6 +1021,12 @@
             parsed.slotValues[slot.id] = preservedValues[index];
           }
         });
+      } else {
+        parsed.slots.forEach((slot) => {
+          if (slot.id === slot.token && sharedValues[slot.token]) {
+            parsed.slotValues[slot.id] = sharedValues[slot.token];
+          }
+        });
       }
 
       return {
@@ -835,7 +1037,7 @@
     }
 
     function getDefaults(templateDefaults) {
-      return { ...GLOBAL_DEFAULTS, ...templateDefaults };
+      return { ...getGlobalDefaults(), ...templateDefaults };
     }
 
     function updateEmptyState() {
@@ -856,6 +1058,38 @@
       };
       setTrigger(step1Trigger, step1LabelEl, step1Value, 'step1Placeholder');
       setTrigger(step2Trigger, step2LabelEl, step2Value, 'step2Placeholder');
+      if (step2Auto && step2Value) step2LabelEl.textContent += ' · ' + t('autoTag');
+    }
+
+    function updateOptionToggles() {
+      followUpToggle.setAttribute('aria-pressed', String(followUpEnabled));
+      promoToggle.setAttribute('aria-pressed', String(promoEnabled));
+      specialOrderToggle.setAttribute('aria-pressed', String(specialOrderEnabled));
+    }
+
+    function toggleOption(option) {
+      cacheAllBlocks();
+      if (option === 'followUp') {
+        followUpEnabled = !followUpEnabled;
+      } else if (option === 'specialOrder') {
+        specialOrderEnabled = !specialOrderEnabled;
+      } else {
+        promoEnabled = !promoEnabled;
+        localStorage.setItem('spf-promo', promoEnabled ? '1' : '0');
+      }
+      updateOptionToggles();
+      rebuildCanvas();
+    }
+
+    /* Keeps Step 2 in sync with the clock unless it was picked by hand */
+    function refreshAutoSchedule() {
+      if (!step2Auto) return;
+      const next = getAutoSchedule();
+      if (next === step2Value) return;
+      cacheAllBlocks();
+      step2Value = next;
+      updatePickerTriggers();
+      rebuildCanvas();
     }
 
     function openPicker(which) {
@@ -864,7 +1098,16 @@
       pickerList.innerHTML = '';
 
       const groups = which === 'step1' ? STEP1_CATALOG : [STEP2_CATALOG];
-      const currentValue = which === 'step1' ? step1Value : step2Value;
+      const currentValue = which === 'step1' ? step1Value : step2Auto ? 'auto' : step2Value;
+
+      if (which === 'step2') {
+        const autoBtn = document.createElement('button');
+        autoBtn.type = 'button';
+        autoBtn.className = 'picker-option touch-target' + (currentValue === 'auto' ? ' is-active' : '');
+        autoBtn.textContent = t('autoOption') + ' — ' + t('templates.' + getAutoSchedule());
+        autoBtn.addEventListener('click', () => selectPickerItem('auto'));
+        pickerList.appendChild(autoBtn);
+      }
 
       groups.forEach((group) => {
         const heading = document.createElement('div');
@@ -902,8 +1145,10 @@
       if (activePicker === 'step1') {
         step1Value = templateId;
       } else if (activePicker === 'step2') {
+        step2Auto = templateId === 'auto';
         step2Value = templateId;
       }
+      if (step2Auto) step2Value = getAutoSchedule();
       closePicker();
       updatePickerTriggers();
       rebuildCanvas();
@@ -915,7 +1160,7 @@
 
       if (step1Value) {
         const tpl = findTemplateById(step1Value);
-        if (tpl) appendBlock(tpl, 'step1');
+        if (tpl) appendBlock(withStep1Extras(tpl), 'step1');
       }
 
       if (step2Value) {
@@ -978,6 +1223,7 @@
 
         input.addEventListener('input', (e) => {
           block.slotValues[seg.id] = e.target.value;
+          if (SHARED_TOKENS.includes(seg.token)) sharedValues[seg.token] = e.target.value;
           resizeInlineField(e.target);
         });
 
@@ -993,6 +1239,12 @@
       step1Value = '';
       step2Value = '';
       Object.keys(slotCache).forEach((k) => delete slotCache[k]);
+      Object.keys(sharedValues).forEach((k) => delete sharedValues[k]);
+      followUpEnabled = false;
+      specialOrderEnabled = false;
+      step2Auto = true;
+      step2Value = getAutoSchedule();
+      updateOptionToggles();
       updatePickerTriggers();
       rebuildCanvas();
       copyFeedback.classList.add('hidden');
@@ -1077,8 +1329,17 @@
     pickerClose.addEventListener('click', closePicker);
     clearAllBtn.addEventListener('click', clearAllBlocks);
     copyBtn.addEventListener('click', copyFinalText);
+    followUpToggle.addEventListener('click', () => toggleOption('followUp'));
+    promoToggle.addEventListener('click', () => toggleOption('promo'));
+    specialOrderToggle.addEventListener('click', () => toggleOption('specialOrder'));
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') refreshAutoSchedule();
+    });
+    setInterval(refreshAutoSchedule, 60 * 1000);
 
     /* ─── Init ─── */
+    updateOptionToggles();
+    refreshAutoSchedule();
     updatePickerTriggers();
     applyLanguage(currentLang);
     initInstallPrompt();
